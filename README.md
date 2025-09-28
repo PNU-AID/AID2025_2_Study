@@ -2,13 +2,6 @@
 
 > 2025년 2학기 AID 동아리의 **혼자 공부하는 머신러닝+딥러닝** 스터디 저장소입니다. 주차별 자료, 발표 링크, 과제, 질의응답을 한 곳에서 관리합니다.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/AID-Study-blue" />
-  <img src="https://img.shields.io/badge/Term-2025_2-lightgrey" />
-  <img src="https://img.shields.io/badge/Team-08-success" />
-  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" />
-</p>
-
 ---
 
 ## 목차
