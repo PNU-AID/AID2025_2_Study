@@ -115,7 +115,8 @@ plt.ylabel('R^2')
 plt.show()
 ```
 
-![왼쪽은 train set점수 아주 높고 test set점수 아주 낮은 과대적합, 오른쪽으로 갈수록 두 점수 모두 낮아지는 과소적합](%ED%98%BC%EA%B3%B5%EB%A8%B8%EC%8B%A0%EB%A6%BF%EC%A7%80.png)
+<img width="877" height="619" alt="image" src="https://github.com/user-attachments/assets/82d923c1-eadd-4841-87da-917eb2e83b7f" />
+
 
 왼쪽은 train set점수 아주 높고 test set점수 아주 낮은 과대적합, 오른쪽으로 갈수록 두 점수 모두 낮아지는 과소적합
 
@@ -153,7 +154,8 @@ plt.ylabel('R^2')
 plt.show()
 ```
 
-![동일하게 왼쪽은 과대적합, 오른쪽은 과소적합.](%ED%98%BC%EA%B3%B5%EB%A8%B8%EC%8B%A0%EB%9D%BC%EC%8F%98.png)
+<img width="871" height="622" alt="image" src="https://github.com/user-attachments/assets/2e4281ff-00a3-49a9-bb5e-890e38a1e726" />
+
 
 동일하게 왼쪽은 과대적합, 오른쪽은 과소적합.
 
