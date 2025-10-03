@@ -2,10 +2,11 @@
 ## 1-1 인공지능과 머신러닝, 딥러닝
 인공지능 - 사람처럼 학습하고 추론할 수 있는 지능을 가진 컴퓨터 시스템을 만드는 기술<br>
 머신러닝 - 규칙을 일일이 프로그래밍하지 않아도 자동으로 데이터에서 규칙을 학습하는 알고리즘을 연구하는 분야<br>
+딥러닝 - 머신러닝 알고리즘 중에 인공 신경망을 기반으로 한 방법들을 통칭하여 부르는 말<br>
 ### 사이킷런
 <img width="257" height="190" alt="image" src="https://github.com/user-attachments/assets/12c6ebba-4baa-4009-932a-97453d4d03f9" /><br>
-대표적인 머신러닝 라이브러리<br><br>
-딥러닝 - 머신러닝 알고리즘 중에 인공 신경망을 기반으로 한 방법들을 통칭하여 부르는 말<br>
+대표적인 머신러닝 라이브러리<br>
+
 ## 1-2 코랩과 주피터 노트북
 ### 구글 코랩<br>
 <img width="385" height="250" alt="image" src="https://github.com/user-attachments/assets/84dae46d-664b-4ab8-9c07-af386a216eaa" /><br>
