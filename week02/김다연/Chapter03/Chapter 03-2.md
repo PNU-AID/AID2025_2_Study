@@ -11,7 +11,7 @@
 4. 실습
     - 코드
         
-        ```cpp
+        ```python
         import numpy as np
         
         perch_length = np.array([8.4, 13.7, 15.0, 16.2, 17.4, 18.0, 18.7, 19.0, 19.6, 20.0, 21.0,
@@ -29,7 +29,7 @@
                1000.0])
         ```
         
-        ```cpp
+        ```python
         from sklearn.model_selection import train_test_split
         
         train_input, test_input, train_target, test_target = train_test_split(perch_length, perch_weight, random_state=42) # 훈련 세트, 테스트 세트 분리
@@ -38,7 +38,7 @@
         test_input = test_input.reshape(-1, 1)
         ```
         
-        ```cpp
+        ```python
         from sklearn.neighbors import KNeighborsRegressor
         
         knr = KNeighborsRegressor(n_neighbors=3)
@@ -47,7 +47,7 @@
         knr.predict([[50]]) # 50cm를 1033g으로 -> 틀림
         ```
         
-        ```cpp
+        ```python
         import matplotlib.pyplot as plt
         
         distances, indexes = knr.kneighbors([[50]])
@@ -61,11 +61,11 @@
         plt.show()
         ```
         
-        ```cpp
+        ```python
         np.mean(train_target[indexes]) # 샘플이 훈련 세트의 범위를 넘어가서 엉뚱한 값 예측
         ```
         
-        ```cpp
+        ```python
         distances, indexes = knr.kneighbors([[100]])
         
         plt.scatter(train_input, train_target)
@@ -86,11 +86,11 @@
         lr.predict([[50]])
         ```
         
-        ```cpp
+        ```python
         lr.coef_, lr.intercept_ # 기울기, y절편
         ```
         
-        ```cpp
+        ```python
         plt.scatter(train_input, train_target)
         
         plt.plot([15, 50], [15 * lr.coef_ + lr.intercept_, 50 * lr.coef_ + lr.intercept_])
@@ -101,32 +101,32 @@
         plt.show()
         ```
         
-        ```cpp
+        ```python
         print(lr.score(train_input, train_target))
         print(lr.score(test_input, test_target))
         ```
         
-        ```cpp
+        ```python
         train_poly = np.column_stack((train_input ** 2, train_input))
         test_poly = np.column_stack((test_input ** 2, test_input))
         ```
         
-        ```cpp
+        ```python
         train_poly.shape, test_poly.shape
         ```
         
-        ```cpp
+        ```python
         lr = LinearRegression()
         lr.fit(train_poly, train_target)
         
         lr.predict([[50 ** 2, 50]])
         ```
         
-        ```cpp
+        ```python
         lr.coef_, lr.intercept_ # 무게 = 1.01 * 길이 ** 2 - 21.6 * 길이 + 116.05
         ```
         
-        ```cpp
+        ```python
         point = np.arange(15, 50)
         plt.scatter(train_input, train_target)
         plt.plot(point, 1.01 * point ** 2 - 21.6 * point + 116.05)
@@ -137,10 +137,7 @@
         plt.show()
         ```
         
-        ```cpp
+        ```python
         print(lr.score(train_poly, train_target))
         print(lr.score(test_poly, test_target))
         ```
-        
-    
-    [03_2.ipynb](03_2.ipynb)
