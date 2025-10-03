@@ -13,7 +13,7 @@
     2. 처음 과소적합 해결을 위해 k 값을 줄임 → k 값이 적을수록 더 가까이 있는 값의 평균이 나오기 때문에 훈련 세트의 값이 정확해짐
     - 코드
         
-        ```cpp
+        ```python
         import numpy as np
         
         perch_length = np.array([8.4, 13.7, 15.0, 16.2, 17.4, 18.0, 18.7, 19.0, 19.6, 20.0, 21.0,
@@ -31,7 +31,7 @@
                1000.0])
         ```
         
-        ```cpp
+        ```python
         import matplotlib.pyplot as plt
         
         plt.scatter(perch_length, perch_weight)
@@ -40,33 +40,33 @@
         plt.show()
         ```
         
-        ```cpp
+        ```python
         from sklearn.model_selection import train_test_split
         
         train_input, test_input, train_target, test_target = train_test_split(perch_length, perch_weight, random_state=42) # 훈련 세트, 테스트 세트 분리
         ```
         
-        ```cpp
+        ```python
         test_array = np.array([1,2,3,4])
         print(test_array.shape)
         ```
         
-        ```cpp
+        ```python
         test_array = test_array.reshape(2,2)
         print(test_array.shape) # 훈련하기 위해 2, 2로 reshape
         ```
         
-        ```cpp
+        ```python
         test_array
         ```
         
-        ```cpp
+        ```python
         train_input = train_input.reshape(-1, 1) # -1: 나머지 배열 크기에 맞춰라
         test_input = test_input.reshape(-1, 1)
         train_input.shape, test_input.shape
         ```
         
-        ```cpp
+        ```python
         from sklearn.neighbors import KNeighborsRegressor
         
         knr = KNeighborsRegressor()
@@ -75,7 +75,7 @@
         knr.score(test_input, test_target) # 결정계수(R**2)
         ```
         
-        ```cpp
+        ```python
         from sklearn.metrics import mean_absolute_error
         
         test_prediction = knr.predict(test_input)
@@ -84,11 +84,11 @@
         mae # 19g 정도 타깃값과 다름
         ```
         
-        ```cpp
+        ```python
         knr.score(train_input, train_target) # 과소적합
         ```
         
-        ```cpp
+        ```python
         knr.n_neighbors = 3 # 과소적합 해결 위함
         
         knr.fit(train_input, train_target)
