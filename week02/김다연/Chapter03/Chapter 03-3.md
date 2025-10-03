@@ -11,8 +11,8 @@
     2. fit(), transform() 제공
 4. **규제**
     1. 머신러닝 모델이 훈련 세트를 **너무 과도하게 학습하지 못하도록** 막는 것
-        
-        ![image.png](image.png)
+
+        ![image.png](https://github.com/user-attachments/assets/f9b6f3e6-c820-4d3b-8cf2-cb252d97bd98)
         
     2. **릿지(ridge)**
         1. 계수를 **제곱**한 값을 기준으로 규제 적용
@@ -24,8 +24,8 @@
         2. alpha 값 **작아짐** → 규제 작아짐 → **과대적합** 유도
         3. **하이퍼파라미터** : **사람**이 알려줘야 하는 파라미터
         4. **훈련 세트, 테스트 세트 점수가 가장 가까운** 지점이 **최적의 alpha**
-            
-            ![이때의 최적 alpha : 10^-1 = 0.1](image%201.png)
+
+            ![이때의 최적 alpha : 10^-1 = 0.1](https://github.com/user-attachments/assets/ddad9faf-a290-44a3-8955-7b590a6ba1f9)
             
             이때의 최적 alpha : 10^-1 = 0.1
             
@@ -203,6 +203,3 @@
         ```python
         np.sum(lasso.coef_ == 0) # 40개의 특성을 0으로 만듦
         ```
-        
-    
-    [03_3.ipynb](03_3.ipynb)
