@@ -98,6 +98,3 @@
         ```cpp
         knr.score(test_input, test_target)
         ```
-        
-    
-    [03_1.ipynb](03_1.ipynb)
