@@ -33,7 +33,8 @@ plt.ylabel('weight')
 plt.show()
 ```
 
-![혼공머신선형회귀.png](%ED%98%BC%EA%B3%B5%EB%A8%B8%EC%8B%A0%EC%84%A0%ED%98%95%ED%9A%8C%EA%B7%80.png)
+<img width="930" height="664" alt="image" src="https://github.com/user-attachments/assets/e537a1ea-4a2d-480e-8b4d-be8e4639d5aa" />
+
 
 **다항 회귀 : 최적의 곡선 찾기. 다항식을 사용한 선형 회귀임.**
 
@@ -53,4 +54,4 @@ print(lr.coef_,lr.intercept_)
 # [  1.01433211 -21.55792498] 116.0502107827827
 ```
 
-![혼공머신다항회귀.png](%ED%98%BC%EA%B3%B5%EB%A8%B8%EC%8B%A0%EB%8B%A4%ED%95%AD%ED%9A%8C%EA%B7%80.png)
+<img width="916" height="660" alt="image" src="https://github.com/user-attachments/assets/3cf48d5d-55d0-41b2-8c43-79804114bf24" />
