@@ -6,15 +6,15 @@
     1. 각 특성값이 평균에서 **표준편차의 몇 배**만큼 떨어져 있는지 나타냄 → 스케일이 안 맞을 때 조정하는 방법 중 하나
     2. 계산법 : **(데이터 - 평균) ** 2**
 4. **브로드캐스팅** : **모든 행**에 연산 적용
-    
-    ![image.png](image.png)
+
+    ![image.png](https://github.com/user-attachments/assets/a552661b-412d-4f47-a1ce-bea8dbd341d7)
     
 5. 실습
     1. column_stack() → 전달받은 리스트 일렬로 세우고 차례대로 나란히 연결 (연결할 리스트는 tuple로 전달)
     2. np.ones() → 1로 채운 배열 만듦, np.zeros() → 0으로 채운 배열 만듦
     3. np.concatenate() → 첫 번째 차원을 따라 배열 연결
-        
-        ![image.png](image%201.png)
+
+        ![image.png](https://github.com/user-attachments/assets/e38d9906-f1ad-4748-83f0-48ba0428a8dd)
         
     4. stratify : 매개변수에 타깃 데이터를 전달하면 클래스 비율에 맞게 데이터를 나눔
     5. np.mean() → 평균 계산
@@ -186,6 +186,3 @@
         plt.ylabel('weight')
         plt.show()
         ```
-        
-    
-    [02_2.ipynb](02_2.ipynb)
