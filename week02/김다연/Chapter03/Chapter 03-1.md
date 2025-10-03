@@ -95,6 +95,6 @@
         knr.score(train_input, train_target)
         ```
         
-        ```cpp
+        ```python
         knr.score(test_input, test_target)
         ```
