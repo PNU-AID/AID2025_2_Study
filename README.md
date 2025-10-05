@@ -23,7 +23,7 @@ AID 동아리에서 진행하는 **머신러닝·딥러닝 기초 스터디**입
 | ---- | ------ | -------------- | --------- | ------------------------------------------ | -------- |
 | 01   | 09-셋째주 | Ch1. 머신러닝 맛보기  | 이름 [조승현]| [[칫수뛔이]](https://velog.io/@moonwalker04/Chapter-01-%EB%82%98%EC%9D%98-%EC%B2%AB-%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D) · [[신수민]](https://velog.io/@rambutan1010/Chapter-01) · [[조승현]](https://velog.io/@jo1579/%ED%98%BC%EA%B3%B5%EB%A8%B8%EB%94%A5-1%EC%A3%BC%EC%B0%A8) | - [✓] 완료 |
 | 01   | 09-셋째주 | Ch2. 데이터 다루기   | 이름 [조승현]| [[칫수뛔이]](https://velog.io/@moonwalker04/Chapter-02-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EB%8B%A4%EB%A3%A8%EA%B8%B0) · [[신수민]](https://velog.io/@rambutan1010/Chapter-02) · [[조승현]](https://velog.io/@jo1579/%ED%98%BC%EA%B3%B5%EB%A8%B8%EB%94%A5-Chapter-2) | - [✓] 완료 |
-| 02   | 09-넷째주 | Ch3. 회귀 & 규제   | 이름        | [[칫수뛔이]]() · [[신수민]]() · [[조승현]]() | - [ ] 완료 |
+| 02   | 09-넷째주 | Ch3. 회귀 & 규제   | 이름   [[X]]   | [[칫수뛔이]](https://velog.io/@moonwalker04/Chapter-03-%ED%9A%8C%EA%B7%80-%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EA%B3%BC-%EB%AA%A8%EB%8D%B8-%EA%B7%9C%EC%A0%9C) · [[신수민]](https://velog.io/@rambutan1010/Chapter-03) · [[조승현]](https://velog.io/@jo1579/%ED%98%BC%EA%B3%B5%EB%A8%B8%EB%94%A5-Chapter-3) | - [✓] 완료 |
 | 03   | 10-넷째주 | Ch4. 분류 알고리즘   | 이름        | [[칫수뛔이]]() · [[신수민]]() · [[조승현]]() | - [ ] 완료 |
 | 04   | 11-첫째주 | Ch5. 트리 모델     | 이름        | [[칫수뛔이]]() · [[신수민]]() · [[조승현]]() | - [ ] 완료 |
 | 05   | 11-둘째주 | Ch6. 비지도 학습 | 이름        | [[칫수뛔이]]() · [[신수민]]() · [[조승현]]() | - [ ] 완료 |
