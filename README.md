@@ -14,13 +14,26 @@
 ### 1. 레포지토리 Fork
 - 각 스터디 장은 이 레포를 fork 하여 자신의 스터디 저장소를 생성합니다.
 - 스터디원들은 해당 fork 저장소를 활용해 자료를 올립니다.
+- <img width="1268" height="756" alt="image" src="https://github.com/user-attachments/assets/e34e2d02-1ccb-4b04-909a-dc7c18a51f48" />
+-> 꼭 Copy the main branch only 체크!!
 
 ### 2. 스터디 전용 브랜치 사용
 - 각 스터디에는 고유한 브랜치가 존재합니다.
 - 스터디원들의 모든 활동은 반드시 해당 스터디 브랜치에서만 진행합니다.
-- 예시:
-  - AI_Book_Study → AI_Book_Study_Branch
-  - Algorithm_Study → Algorithm_Study_Branch
+  
+| 팀명               | 브랜치 이름              | 참여자 이름 |
+|--------------------|--------------------------|-------------|
+| SpeedRun 6기       | `SpeedRun_6th`           | 김정태, 박준혁, 최민준, 박재홍 |
+| 논문리딩 스터디    | `Thesis_Reading_Study`   | 전진혁, 이치오, 박준혁, 금비 |
+| 에이전트 마중 나가기 | `Agent_Study`             | 김성욱, 김태균, 김명석, 최민준 |
+| 혼공머 1팀         | `hongong_machine_study1` | 임병회, 김다연, 이효진, 채태영 |
+| 혼공머 2팀         | `hongong_machine_study2` | 유호영, 윤효진, 박동화, 신지은 |
+| 혼공머 3팀         | `hongong_machine_study3` | 백다빈, 김유찬, 정서영, 하업준 |
+| 혼공머 4팀         | `hongong_machine_study4` | 박승현, 전동훈, 백준서, 박동규 |
+| 혼공머 5팀         | `hongong_machine_study5` | 김규빈, 장호빈, 원성범, 정지은 |
+| 혼공머 6팀         | `hongong_machine_study6` | 서원빈, 김유진, 김성환, 김현지 |
+| 혼공머 7팀         | `hongong_machine_study7` | 김도훈, 박상혁, 전승우 |
+| 혼공머 8팀         | `hongong_machine_study8` | 김다현, 칫수뛔이, 신수민, 조승현 |
 
 ### 3. 주차별 자료 업로드
 - 각 스터디의 활동 내역은 week01/, week02/ 등 주차별 폴더에 자유롭게 업로드합니다.
