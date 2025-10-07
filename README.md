@@ -22,7 +22,7 @@
 - 각 챕터 종료 후 **문제 풀이 발표 자료**를 업로드합니다.
 
 이외에도 노션 페이지에 동일한 자료를 게재하며  
-다음 주차 노트 테이커와 리더를 확인할 수 있습니다.
+다음 주차 노트 테이커와 리더를 확인할 수 있습니다.  
 link: https://sumptuous-beak-1b0.notion.site/26ee753445ba80f5b2b3ec69bd2ee812
 
 ---
@@ -44,3 +44,4 @@ link: https://sumptuous-beak-1b0.notion.site/26ee753445ba80f5b2b3ec69bd2ee812
 | Week 4 |  |  |
 
 ---
+
