@@ -18,6 +18,7 @@ train_oh = keras.utils.to_categorical(train_seq)
 
 이를 해결하기 위해 **각 단어를 고정된 크기의 실수 벡터로 바꿔주는 단어 임베딩**을 사용함.
 
-![image.png](image.png)
+<img width="330" height="60" alt="image" src="https://github.com/user-attachments/assets/6dec9fbf-32ba-459c-a28e-2675ceba0348" />
+
 
 훨씬 작은 크기로 단어를 잘 표현할 수 있게됨→메모리 절약, 더 많은 단어 사용가능
