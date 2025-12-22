@@ -77,7 +77,8 @@
     ```
     
 
-![image.png](image.png)
+<img width="191" height="126" alt="image" src="https://github.com/user-attachments/assets/22bdf041-520d-4868-8040-ce5d58e30c6c" />
+
 
 Q. 특성 맵 시각화를 만드는데 함수형 API가 필요한 이유?
 
@@ -134,11 +135,13 @@ Sequential 모델에서는
     ```
     
 
-![첫번째 층의 특성 맵 시각화 32개](image%201.png)
+![첫번째 층의 특성 맵 시각화 32개]<img width="559" height="287" alt="image 1" src="https://github.com/user-attachments/assets/d91c1135-1892-4494-9fee-a96e72226181" />
+
 
 첫번째 층의 특성 맵 시각화 32개
 
-![ 두번째 층의 특성 맵 시각화 결과. 64개](image%202.png)
+![ 두번째 층의 특성 맵 시각화 결과. 64개]<img width="546" height="544" alt="image 2" src="https://github.com/user-attachments/assets/c0f5bf63-a6de-49cb-b816-1d53f2a48ce9" />
+
 
  두번째 층의 특성 맵 시각화 결과. 64개
 
