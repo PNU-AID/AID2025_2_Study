@@ -32,7 +32,7 @@
 | 혼공머 4팀         | `hongong_machine_study4` | 박승현, 전동훈, 백준서, 박동규 |
 | 혼공머 5팀         | `hongong_machine_study5` | 김규빈, 장호빈, 원성범, 정지은 |
 | 혼공머 6팀         | `hongong_machine_study6` | 서원빈, 김유진, 김성환, 김현지 |
-| 혼공머 7팀         | `hongong_machine_study7` | 김도훈, 박상혁, 전승우 |
+| 혼공머 7팀         | `hongong_machine_study7` | 김도훈, 김제원, 박상혁, 전승우 |
 | 혼공머 8팀         | `hongong_machine_study8` | 김다현, 칫수뛔이, 신수민, 조승현 |
 
 ### 3. 주차별 자료 업로드
