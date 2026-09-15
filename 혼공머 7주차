@@ -1,0 +1,619 @@
+# 07-1 인공 신경망
+
+### **로지스틱 회귀 복습**
+
+SGDClassifier를 사용하여 gradient descent 모델 만들기
+
+```python
+from sklearn.model_selection import cross_validate
+from sklearn.linear_model import SGDClassifier
+sc = SGDClassifier(loss ='log_loss', max_iter = 5, random_state=42) # log->log_loss
+scores = cross_validate(sc, train_scaled, train_target, n_jobs=-1)
+print(np.mean(scores['test_score']))
+###################################################
+0.8194166666666666
+```
+
+![image.png](attachment:7db08015-0d72-464d-83f0-4bb37b451d1c:image.png)
+
+![image.png](attachment:d8716f84-c201-49be-83db-00244836ed39:image.png)
+
+![image.png](attachment:3bf9a079-e371-4860-8487-e2dbeb8c2094:image.png)
+
+클래스별로 다른 가중치와 절편(학습 파라미터)을 사용해서 선형방정식을 만들 수 있다. 
+
+### 인공신경망
+
+![image.png](attachment:697b4d25-c305-4b08-8c75-f27320166846:image.png)
+
+뉴런(=유닛): z값이 계산하는 단위
+
+- 매컬러-피츠 뉴런
+    
+    ![image.png](attachment:a6c6207f-3479-48ea-9958-55d58722db13:image.png)
+    
+
+### TensorFlow
+
+- 텐서플로 VS 케라스
+    
+    ![image.png](attachment:ed0b90c0-c4ef-40f4-afb2-c1511252ae81:image.png)
+    
+    케라스는 딥러닝의 기본적인 연산(tensor들의 연산이나 미분 등)과 GPU 연산을 수행하지 않는다. 
+    대신 이런 연산을 수행하는 다른 라이브러리를 백엔드로 사용한다.
+    
+    `from tensorflow import keras`
+    
+- **인공 신경망으로 모델 만들기**
+
+```python
+from sklearn.model_selection import train_test_split
+train_scaled, val_scaled, train_target, val_target = train_test_split(train_scaled, train_target, test_size=0.2, random_state = 42)
+
+# ------------------------신경망 층---------------------------------
+dense = keras.layers.Dense(10, activation='softmax', input_shape=(784,)) 
+# 뉴런 개수, 활성화 함수, 입력의 크기
+
+# ------------------------신경망 모델--------------------------------
+model = keras.Sequential([dense]) # iterable 한 레이어를 전달해야함 -> dense를 list로 감싸서 전달
+```
+
+![image.png](attachment:eb110cc4-4d26-4bad-b54c-0cb4540ed2ee:7a32a52e-d6cd-43b1-a74e-8a53cefe92d3.png)
+
+**밀집층(완전연결층)**
+
+양쪽의 뉴런이 모두 연결된 층
+
+![image.png](attachment:141960a8-90bf-43ff-9b4d-2e66f957a18c:5c70d322-34a1-42de-8d6f-c47ae74b72b5.png)
+
+![image.png](attachment:14d88b4b-c81b-4755-b627-eb0821a58297:ce5a3e5d-a9ba-4757-b8c6-eda405f9c10c.png)
+
+### 인공 신경망으로 패션 아이템 분류하기
+
+- keras모델 만들기(`model.compile(loss, metrics)`)
+
+```python
+model.compile(loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+# 손실함수 종류와 훈련과정에서 계산하고 싶은 측정값 지정 필수
+```
+
+- loss 매개변수
+    - 크로스 엔트로피 손실 함수
+        - 이진 분류: binary_crossentropy
+        - 다중 분류: categorical_crossentrop
+    - **one-hot encoding**
+        
+        이진 분류의 경우 출력 뉴런은 양성 클래스에 대한 확률만 출력
+        
+        **다중 분류**일 경우 각 클래스에 대한 출력층 생성
+        
+        → 타깃에 해당하는 확률만 남겨 놓기 위해 나머지 확률에 모두 0을 곱한다(ex: [1,0,0,0,0,0])
+        
+        **one-hot 인코딩**: 타깃값을 해당 클래스만 1이고 나머지는 모두 0인 배열로 만드는 것
+        
+        ![image.png](attachment:b47592f0-b8a8-40fc-891d-48d98935848b:image.png)
+        
+    - 텐서플로에서는 정수로 된 타깃값을 원-핫 인코딩으로 바꾸지 않고 사용 가능(loss=’sparse_categorical_crossentropy’)
+    타깃값이 원-핫 인코딩이라면 loss=’categorical_crossentropy’
+- metrics 매개변수
+    
+    참고: keras는 기본적으로 에포크마다 손실 값을 출력해줌
+    
+    - 모델의 학습 및 테스트 중 모니터링 및 성능을 평가하는 데 사용하는 함수
+    - 분류: accuracy
+    - 회귀: mse, mae
+- 모델 성능 평가 `evaluate()`
+    
+    ```python
+    model.evaluate(val_scaled, val_target)
+    # ------------------------------------------
+    192/192 ━━━━━━━━━━━━━━━━━━━━ 1s 2ms/step - accuracy: 0.8429 - loss: 0.4468
+    [0.4513700306415558, 0.8416340947151184]
+    ```
+    
+
+### sklearn-SGDClassifier  VS  keras-Sequential
+
+![image.png](attachment:90a7b5c2-8518-4d24-adea-d59796779b66:f29c6862-c4bd-48c8-bde2-85a9ec8d9f62.png)
+
+# 07-2 심층 신경망
+
+인공 신경망 사이에 층을 추가하자!
+
+### 2개의 층
+
+![image.png](attachment:974f121a-1c14-490c-bebe-37493682f708:image.png)
+
+- **은닉층**
+    
+    입력층과 출력층 사이에 밀집층 추가
+    
+    입력층과 출력층 사이에 있는 모든 층을 은닉층이라고 부름
+    
+- 활성화 함수
+    - 출력층에 적용하는 활성화 함수
+        
+        회귀는 실수를 출력함 → 활성화함수 적용할 필요 X
+        
+        - 이진 분류: 시그모이드 함수
+        - 다중 분류: 소프트맥스 함수
+    - 은닉층에 적용하는 활성화 함수
+        - 시그모이드, 렐루(ReLU) 함수
+        - 은닉층에 활성화 함수를 적용해야하는 이유
+            
+            선형적 계산만 수행한다면 → 딥러닝X
+            
+            활성화 함수를 적용하여 중간단계의 특성 계산
+            
+            ![image.png](attachment:9f27aae3-186a-4097-8c96-66ab92bb391f:cb0b789b-ad6a-47e3-847d-e1cdb4ed1c9b.png)
+            
+
+```python
+from tensorflow import keras
+(train_input, train_target), (test_input, test_target)=keras.datasets.fashion_mnist.load_data()
+
+from sklearn.model_selection import train_test_split
+train_scaled = train_input / 255.0
+train_scaled = train_scaled.reshape(-1, 28*28)
+train_scaled, val_scaled, train_target, val_target = train_test_split(train_scaled, train_target, test_size=0.2, random_state = 42)
+
+# --------은닉층: sigmoid | 출력층: softmax 활성화함수 사용-----------------
+dense1 = keras.layers.Dense(100,activation='sigmoid', input_shape=(784,))
+dense2 = keras.layers.Dense(10,activation='softmax')
+```
+
+### 심층 신경망 만들기
+
+```python
+model = keras.Sequential([dense1, dense2])
+# 출력층을 가장 마지막에, 층(dense)을 list로 만들어 전달
+```
+
+![image.png](attachment:2aa03c62-db7f-45e4-8cb9-ac9902a3d7be:4b79408b-b75c-46fb-a0d5-5abf618c8574.png)
+
+인공 신경망: **입력 데이터에 대한 연속적인 학습을 진행할 수 있음** 
+
+- `model.summary()`
+
+```python
+model.summary()
+
+# ------------------------------------------------------------------------
+
+ Model: "sequential_8"
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Layer (type)                    ┃ Output Shape           ┃       Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ dense_7 (Dense)                 │ (None, 100)            │        78,500 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dense_8 (Dense)                 │ (None, 10)             │         1,010 │
+└─────────────────────────────────┴────────────────────────┴───────────────┘
+
+ Total params: 79,510 (310.59 KB)
+
+ Trainable params: 79,510 (310.59 KB)
+
+ Non-trainable params: 0 (0.00 B)
+```
+
+`│ dense_7 (Dense) │ (None, 100)` : None은 샘플 개수가 정의되어 있지 않음을 나타냄(mini-batch gradien descent→batch-size 변경 가능 … 어떤 배치 크기에도 유연하게 대응하도록 None으로 설정)
+
+### 층을 추가하는 다른 방법
+
+```python
+# --------------Sequential 생성자 안에서 바로 객체만들기 -------------------
+model = keras.Sequential([keras.layers.Dense(100, activation='sigmoid', input_shape=(784,), name='hidden'),
+                            keras.layers.Dense(10, activation='softmax', name='output')], name='패션 MNIST 모델')
+# --------------Sequential객체 만들고 add() 호출 -------------------
+model = keras.Sequential()
+model.add(keras.layers.Dense(100, activation='sigmoid', input_shape=(784,)))
+model.add(keras.layers.Dense(10, activation='softmax'))
+
+model.summary()
+# -------------------------------------------------------------------
+ Model: "패션 MNIST 모델"
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Layer (type)                    ┃ Output Shape           ┃       Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ hidden (Dense)                  │ (None, 100)            │        78,500 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ output (Dense)                  │ (None, 10)             │         1,010 │
+└─────────────────────────────────┴────────────────────────┴───────────────┘
+
+ Total params: 79,510 (310.59 KB)
+
+ Trainable params: 79,510 (310.59 KB)
+
+ Non-trainable params: 0 (0.00 B)
+
+```
+
+### ReLU 함수
+
+문제점: sigmoid함수의 기울기 ≤ 0.25
+
+![image.png](attachment:f5cd8cd7-dc19-4f01-bd08-9fb8193e95f0:dc1d2f63-5269-4d08-83c3-395d74a0a96c.png)
+
+- **Gradient Vanishing(기울기 소실)**
+    
+    딥러닝의 학습: 오차를 줄이기 위해 기울기(gradient)만큼 가중치 갱신
+    
+    입력 → 은닉층 → 출력 → 오차발견 ← gradient계산 후 오차 갱신(역전파)
+    
+    $w_{new} = w_{old} - \nabla_w Trainloss$
+    
+    ![image.png](attachment:81fafc66-a7b4-4351-91ee-347c5be9a1dd:image.png)
+    
+    sigmoid 함수의 경우 최대 기울기가 0.25 → w update가 아주 미미하게 이뤄짐
+    
+    → 오차가 있어도 가중치의 변화가 거의 없음 ⇒ 오차가 있어도 가중치를 수정할 수 없음!! 
+    
+    → 층을 거칠때마다 기울기가 계속 곱해짐(0.1*0.1*0.1*…)
+    
+    → 입력층 근처에 도달하면(누적) 기울기가 완전 0으로 소실됨 → 앞단의 학습이 멈춰버림 
+    
+
+해결책: **ReLU 함수**
+
+입력이 양수일 경우 마치 활성화 함수가 없는 것처럼 pass
+
+입력이 음수일 경우 0으로 만든다
+
+- Gradient Vanishing 해결
+    
+    **양수**
+    
+    gradient : 1 * 1 * 1 * 1 *…=1
+    미분값은 1로 유지됨 
+    → 출력값에서 발생한 오차 신호가 약해지지 않고 입력층까지 전달됨
+    
+    **음수**
+    
+    gradient = 0이 되어 역전파가 중단됨(죽은 ReLU)
+    
+    필요없는 뉴런을 꺼버리고(0), 중요한 뉴런만 살린다(1)는 의미로 볼 수 있음
+    
+
+![image.png](attachment:61852833-e61b-4a63-bb89-bee944a35ba1:image.png)
+
+- Flatten()
+    
+    배치차원을 제외하고 입력 차원을 모두 일렬로 펼침
+    
+    ```python
+    model = keras.Sequential()
+    model.add(keras.layers.Flatten(input_shape=(28,28)))
+    model.add(keras.layers.Dense(100, activation='relu'))
+    model.add(keras.layers.Dense(10, activation='softmax'))
+    
+    model.summary()
+    # --------------------------------------------------------
+     Model: "sequential_12"
+    
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+    ┃ Layer (type)                    ┃ Output Shape           ┃       Param # ┃
+    ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+    │ flatten_1 (Flatten)             │ (None, 784)            │             0 │
+    ├─────────────────────────────────┼────────────────────────┼───────────────┤
+    │ dense_14 (Dense)                │ (None, 100)            │        78,500 │
+    ├─────────────────────────────────┼────────────────────────┼───────────────┤
+    │ dense_15 (Dense)                │ (None, 10)             │         1,010 │
+    └─────────────────────────────────┴────────────────────────┴───────────────┘
+    
+     Total params: 79,510 (310.59 KB)
+    
+     Trainable params: 79,510 (310.59 KB)
+    
+     Non-trainable params: 0 (0.00 B)
+    
+    ```
+    
+    학습하는 층이 아니기 때문에 parameter 수는 0으로 출력됨
+    
+    Flatten 층의 출력으로 입력값의 차원을 짐작할 수 있다!!
+    
+
+### Optimizer
+
+“다양한 종류의 경사 하강법을 옵티마이저라고 한다”
+
+⇒ loss 함수를 최소화하는 방향으로 모델의 학습 파라미터를 업데이트하는 알고리즘
+
+![image.png](attachment:2a0627cd-2b2e-44e0-a57e-86f5af52c28f:6d8cd0aa-c39a-4e39-86d9-d49ae81bc883.png)
+
+```python
+model.compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+#------------------동일---------------
+sgd = keras.optimizers.SGD(learning_rate = 0.1) # learning rate 지정
+model.compile(optimizer=sgd, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+```
+
+- 기본 경사 하강법
+    - SGD 클래스의 momentum
+        - 매개변수 기본값 = 0
+        - 0보다 클 경우: **모멘텀 최적화**
+        - 모멘텀 최적화
+            
+            SGD의 local minimum에 빠지는 문제를 해결하기 위해 생긴 기법
+            
+            ⇒ 관성 이용(관성 계수(γ)가 클수록 속도가 관성에 더 많은 영향을 받음)
+            
+            $*v_t=γv_{t−1}+η∇_{θ_t}J(θ_t)*$
+            
+    - nesterov = True
+        - 네스테로프 모멘텀 최적화
+        - 모멘텀 최적화를 2번 반복하여 구현
+- 적응적 학습률
+    - 모델이 최적점에 가까이 갈수록 학습률으르 낮추는 것
+    - Adagrad
+        
+        ```python
+        adagrad = keras.optimizers.Adagrad()
+        model.compile(optimizer=adagrad, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        ```
+        
+    - RMSprop(기본)
+        
+        ```python
+        rmsprop = keras.optimizers.RMSprop()
+        model.compile(optimizer=rmsprop, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        ```
+        
+
+# 07-3 심층망 모델 훈련
+
+### 손실 곡선
+
+- 모델을 만드는 함수 정의
+
+```python
+def model_fn(a_layer = None):
+  model=keras.Sequential()
+  model.add(keras.layers.Flatten(input_shape=(28,28)))
+  model.add(keras.layers.Dense(100, activation='relu'))
+  if a_layer:
+    model.add(a_layer)
+  model.add(keras.layers.Dense(10, activation='softmax'))
+  return model
+```
+
+```python
+model.compile(loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history = model.fit(train_scaled, train_target, epochs=5, verbose=0) #verbose=0 : 훈련과정 출력 조절
+print(history.history.keys())
+
+# ------------------------- output -------------------------
+dict_keys(['accuracy', 'loss'])
+```
+
+![image.png](attachment:0bfb0be8-0d78-4602-91da-86ab1171b2fd:image.png)
+
+history 속성에 포함된 손실곡선
+
+![image.png](attachment:f30785dd-9b4d-477b-9bcc-ceb06456d1e0:image.png)
+
+history 속성에 포함된 정확도 곡선
+
+### 검증 손실
+
+에포크마다 검증 손실을 계산하기 위해 keras model의 fit() 메서드에 검증 데이터를 전달하자 (validation_data 매개변수)
+
+```python
+model = model_fn()
+model.compile(loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history = model.fit(train_scaled, train_target, epochs=20, verbose=0, validation_data=(val_scaled, val_target)) # validation_data에 검증에 사용할 입력과 타깃값을 튜플로 전달
+print(history.history.keys())
+# ----------------output----------------------------
+dict_keys(['accuracy', 'loss', 'val_accuracy', 'val_loss'])
+```
+
+![image.png](attachment:ae339e19-0b72-421e-8c06-c1ba5e16f8b2:image.png)
+
+⇒ 검증손실이 상승하는 구간부터 과대적합
+
+해결
+
+1. 옵티마이저 하이퍼파라미터를 조정하여 과대적합 완화(여기서는 adam으로)
+
+```python
+model = model_fn() # optimizer='adam'
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history = model.fit(train_scaled, train_target, epochs=20, verbose=0, validation_data=(val_scaled, val_target))
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.xlabel('epoch')
+plt.ylabel('loss')
+plt.legend(['train', 'val'])
+plt.show
+```
+
+![image.png](attachment:ae339e19-0b72-421e-8c06-c1ba5e16f8b2:image.png)
+
+optimizer = RMSprop
+
+![image.png](attachment:df7300ac-6a28-4346-99cb-7c6695e7dd4f:image.png)
+
+optimizer = adam
+
+⇒ 과대적합 완화
+
+### 드롭 아웃(drop out)
+
+은닉층에 있는 일부 뉴런을 랜덤하게 꺼서(뉴런의 출력을 0으로) 과대적합을 막는다. 
+
+![image.png](attachment:9bf56b2e-dc03-46a2-87eb-a3c91bff6b1d:image.png)
+
+랜덤하게 드롭되며, 드롭할 뉴런의 개수는 하이퍼파라미터이다. 
+
+- 과대적합을 막는 이유
+    1. 이전 층의 일부 뉴런이 랜덤하게 꺼지면 특정 뉴런에 과대하게 의존하는 것을 줄일 수 있음
+    모든 입력에 대해 주의를 기울여야 함 (general 한 특성 학습)
+    2. 2개의 신경망을 앙상블하는 것처럼 간주
+    앙상블: 여러개의 모델을 훈련
+
+```python
+model = model_fn(keras.layers.Dropout(0.3))
+model.summary()
+# -----------------output---------------------------------
+Model: "sequential_4"
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Layer (type)                    ┃ Output Shape           ┃       Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ flatten_4 (Flatten)             │ (None, 784)            │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dense_8 (Dense)                 │ (None, 100)            │        78,500 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dropout (Dropout)               │ (None, 100)            │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dense_9 (Dense)                 │ (None, 10)             │         1,010 │
+└─────────────────────────────────┴────────────────────────┴───────────────┘
+
+ Total params: 79,510 (310.59 KB)
+
+ Trainable params: 79,510 (310.59 KB)
+
+ Non-trainable params: 0 (0.00 B)
+```
+
+- Dropout층 특징
+    - 훈련되는 모델 파라미터 없음
+    - 입출력 크기 동일
+    (일부 뉴런의 출력이 0이 되더라도 전체 출력 배열의 크기는 동일)
+- 주의
+    - 훈련이 끝난 뒤에 평가나 예측을 수행할 때 드롭아웃 적용 X
+    - Tensorflow & keras는 모델의 평가와 예측에 사용할 때, 자동으로 드롭아웃 적용하지 않음, 굳이 안빼도 됨
+
+Dropout한 모델의 손실곡선
+
+![image.png](attachment:a2afdbf4-e020-48b9-a0d5-8b578f4a4a01:image.png)
+
+### 모델 저장과 복원
+
+- 모델 저장
+    
+    `model.save_weights()`
+    
+
+```python
+model.save_weights('model.weights.h5')
+model.save('model_whole.h5')
+
+!ls -al *.h5
+# --------------------------------------------------
+-rw-r--r-- 1 root root 976600 Dec  3 13:25 model.weights.h5
+-rw-r--r-- 1 root root 978584 Dec  3 13:25 model-whole.h5
+```
+
+- 모델 적재
+    
+    `model.load_weights('model.weights.h5')` 
+    
+    주의: `model.load_weights()` 를 사용하려면 `save_weights()`메서드로 저장했던 모델과 정확히 같은 구조를 가져야 함
+    
+- 새로운 모델 → 훈련된 파라미터 사용 **VS** 훈련된 파라미터 내에서 새로운 모델
+    1. 새로운 모델 → 훈련된 파라미터 사용
+    
+    ```python
+    # 새로운 모델 - 훈련된 파라미터
+    model = model_fn(keras.layers.Dropout(0.3))
+    model.load_weights('model.weights.h5')
+    
+    import numpy as np
+    val_labels = np.argmax(model.predict(val_scaled), axis=-1)
+    print(np.mean(val_labels == val_target))
+    
+    # ----------------output---------------------------------
+    375/375 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step
+    0.8784166666666666
+    ```
+    
+    1. 훈련된 파라미터 내에서 새로운 모델
+    
+    ```python
+    model = keras.models.load_model('model-whole.h5')
+    model.evaluate(val_scaled, val_target)
+    # ----------------output---------------------------------
+    375/375 ━━━━━━━━━━━━━━━━━━━━ 3s 3ms/step
+     - accuracy: 0.8796 - loss: 0.3305
+    [0.33040204644203186, 0.8784166574478149]
+    ```
+    
+    1. 결과
+        
+        같은 모델을 저장하고 다시 불러들임 → 동일한 정확도
+        
+    2. 훈련과정
+        
+        모델을 생성 후 훈련 → 검증 점수가 상승하는 지점 확인
+        
+        과대적합 되지 않는 에포크만큼 다시 훈련
+        
+        ⇒ 두번 훈련하지 않고 한번에 끝낼 순 없나?
+        
+
+### 콜백
+
+훈련 과정 중간에 어떤 작업을 수행할 수 있게 하는 객체
+
+두번 훈련 → 한번 훈련 : 가장 낮은 검증 점수를 만드는 모델 저장
+
+```python
+model = model_fn(keras.layers.Dropout(0.3))
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+checkpoint_cb = keras.callbacks.ModelCheckpoint('best-model.h5', save_best_only=True)
+model.fit(train_scaled, train_target, epochs=20, verbose=0, validation_data=(val_scaled, val_target), callbacks=[checkpoint_cb])
+# best-model.h5에 가장 낮은 검증 점수를 가진 모델 저장
+model = keras.models.load_model('best-model.h5')
+model.evaluate(val_scaled, val_target)
+# ------------------------output---------------------------
+375/375 ━━━━━━━━━━━━━━━━━━━━ 1s 2ms/step
+ - accuracy: 0.8878 - loss: 0.3146
+[0.3155957758426666, 0.8861666917800903]
+```
+
+문제점: 그래도 epochs = 20만큼 돌아감, 검증점수가 상승하기 시작하면 그 이후에는 과대적합이 커짐 → 훈련을 계속할 필요 X
+
+- 조기 종료(early stopping)
+    
+    검증 점수가 상승하기 시작하면 훈련을 중지 … 훈련 에포크 횟수를 제한
+    
+    ⇒ 과대적합 규제
+    
+    ```python
+    model = model_fn(keras.layers.Dropout(0.3))
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    checkpoint_cb = keras.callbacks.ModelCheckpoint('best-model.h5', save_best_only=True)
+    early_stopping_cb = keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)
+    # patience: 검증 점수가 향상되지 않더라도 n번 연속으로 점수가 향상되지 않으면 훈련 중지
+    # restore_best_weights: 가장 난ㅈ은 검증 손실을 낸 모델 파라미터로 되돌리기
+    history = model.fit(train_scaled, train_target, epochs=20, verbose=0,  validation_data=(val_scaled, val_target), callbacks=[checkpoint_cb, early_stopping_cb])
+    
+    print(early_stopping_cb.stopped_epoch)
+    # -------------------------------
+    14 # 14번째에 epochs 중지 => 13번째가 최상의 모델
+    ```
+    
+    ```python
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.legend(['train', 'val'])
+    plt.show()
+    ```
+    
+    ![image.png](attachment:5766887c-cc87-4325-ae43-55ff21f79645:image.png)
+    
+    성능 확인
+    
+    ```python
+    model.evaluate(val_scaled, val_target)
+    #------------output-------------------
+    375/375 ━━━━━━━━━━━━━━━━━━━━ 1s 2ms/step 
+    - accuracy: 0.8880 - loss: 0.3112
+    [0.3158862292766571, 0.8857499957084656]
+    ```

@@ -1,0 +1,415 @@
+# 혼공머_8주차
+
+## Ch9-1 순차 데이터와 순환 신경망
+
+→ 순차 데이터
+
+→ 순환 신경망
+
+→ 셀
+
+→은닉 상태 
+
+### 순차 데이터
+
+**???순차 데이터가 무엇이고 어떻게 다른가요???**
+
+→ 텍스트나 시계열 데이터와 같이 순서에 의미가 있는 데이터를 말한다 .
+
+→ 우리가 이전에 배워왔던 데이터 샘플들은 순서가 어떻게 되든 결과에 상관이 없었다 . 
+
+→ 근데 이번의 댓글(여론) 분석 같은 경우 Language의 Syntatic Structure가 해석에 큰 영향을 미친다 . 
+
+![스크린샷 2025-12-02 222532.png](attachment:5079a917-7cee-45dd-9668-e752b8ac59cb:스크린샷_2025-12-02_222532.png)
+
+그리고 !!!
+
+![스크린샷 2025-12-02 222609.png](attachment:ff661dc6-9385-40d3-add4-3acd1d95f27f:스크린샷_2025-12-02_222609.png)
+
+오늘 전혀 다른 종류의 데이터를 다룸(Language)
+
+→ 우리가 이전까지 다뤄왔던 데이터 샘플들은 활성화 함수를 적용하면 계속 앞으로만 나아가기만 하면 됐음.→ 이걸 feedForward neural Network 라고 함.
+
+→ 다만, 우리가 이전에 처리했던 신경망을 처리해야하는 이번에 다룰 데이터 같은 경우는 앞으로 가기만 하면 이전에 처리했던 샘플을 재사용 하기가 곤란함. 
+
+**→ 그래서 순환 신경망을 사용함(Recurrent Neural Network)**
+
+→ 그렇다고 드라마틱하게 막 다르진 않음 ㅋㅋ
+
+### 순환 신경망
+
+![스크린샷 2025-12-02 222942.png](attachment:d798d3e6-a9e6-4f34-8216-9e893590f8d6:스크린샷_2025-12-02_222942.png)
+
+→ 그림의 주황색 고리가 key point입니다 .
+
+→ C B A 를 내가 입력한다고 하면  , A가 들어오고의 출력이 다시 돌아가서 B 할 때 반영이 되고 그거까지 감안된 출력 B는 C가 입력 될 때  또 다시 들어가서 반영됨. 
+
+![스크린샷 2025-12-02 223142.png](attachment:51047a89-4597-4829-ad4c-d23b16692ee1:스크린샷_2025-12-02_223142.png)
+
+→ 순환 신경망에서 쓰는 활성화 함수는 tanh 를 쓴다. 
+
+→ 시그모이드 함수와 다르게 범위가 -1~1임.
+
+### 잠깐 용어 정리
+
+타임스텝 :  샘플을 처리하는 한 단계
+
+셀 : 순환 신경망에서는 ‘층’을 셀이라고 부름.
+
+은닉 상태 : 셀의 출력을 은닉상태라고 부름. 
+
+![스크린샷 2025-12-02 223517.png](attachment:863adaa6-ecd1-4182-9489-3adf283b06a4:스크린샷_2025-12-02_223517.png)
+
+그리고 타임 스텝끼리도 출력이 이어지는 것을 알 수가 있다 .
+
+### 셀의 가중치와 입출력
+
+![스크린샷 2025-12-02 223636.png](attachment:205a43e0-4678-4c95-9dc8-ce8e978f7571:스크린샷_2025-12-02_223636.png)
+
+![스크린샷 2025-12-02 223641.png](attachment:3bc5e102-d30b-4bf5-ba05-62e9de089f2e:스크린샷_2025-12-02_223641.png)
+
+모델 파라미터 개수가( 입력층 갯수  (4) * 순환층 뉴런 (3)  ) + 은닉상태의 순환 (9) + 절편 (3) = 24 → 너어어어무 많음 . 
+→ 그래서 그림으로 표현하기는 어렵다. 
+
+### 순환신경망의 입력
+
+![스크린샷 2025-12-02 223949.png](attachment:1417ba53-74ba-4bf2-ae59-bb7791bbc3db:스크린샷_2025-12-02_223949.png)
+
+“I am a boy”.
+
+→ 4개의 단어
+
+→ 그리고 각 단어를 3개의 vector로 표현할 거임. 
+
+→ 단어 표현(여기선 vector 의 개수) : 3
+
+→ 시퀀스 길이 : i, am , a , boy : 4개 
+
+→ 중요한 것은 순환 층을 거치고 나면 결국 어떻게 되냐면 (1,10) 이 됨. 
+
+→ (1,10)은 곧 1-”1”개의 샘플에 대해서 뉴런의 개수가 10개라고 가정했을 때  1,10 곧 뉴런의 갯수대로 출력이 된다는 뜻입니다 .(뉴런이 순환층에 10개가 있다고 할 때 , 시퀀스의 데이터 개수만큼 자료를 누적해서 처리 후  그걸 순환층의 뉴런 개수만큼으로 만듦)
+
+→ 이걸 어떻게 처리하는 걸까?????? 이게 궁금함.
+
+### 다층 순환 신경망
+
+![스크린샷 2025-12-02 224624.png](attachment:9b7894fd-7cf2-4c31-917c-2c2b441bb482:스크린샷_2025-12-02_224624.png)
+
+-→ 출력은 마지막 타임스텝의 은닉상태만 출력됨
+
+--→층이 2개가 쌓이면 첫 번쨰 층의 출력은 모든 타임스텝의 출력이 다 출력이 됨. 2번째 층이 시퀀스 데이터를 받게 . 
+
+→ 층을 여러 개 쌓을 때는 모든 타임스텝의 출력층을 다 출력하도록 함. 
+
+## Ch9-2 순환 신경망으로 IMDB 리뷰 분류하기
+
+→말뭉치  : 훈련 데이터를 말뭉치라고 하고 주로 Corpus 라고함
+
+→ 토큰
+
+→원-핫 인코딩
+
+→단어 임베딩
+
+→자연어처리 :  컴퓨터를 사용해 인간의 언어를 처리하는 분야
+
+### IMDB 리뷰 데이터셋
+
+```python
+from tensorflow.keras.datasets import imdb
+
+(train_input, train_target), (test_input, test_target) = imdb.load_data(
+    num_words=200)
+    print(train_input[0])
+[[1, 14, 22, 16, 43, 2, 2, 2, 2, 65, 2, 2, 66, 2, 4, 173, 36, 2, 5, 25, 100, 43, 2, 112, 50, 2, 2, 9, 35, 2, 2, 5, 150, 4, 172, 112, 167, 2, 2, 2, 39, 4, 172, 2, 2, 17, 2, 38, 13, 2, 4, 192, 50, 16, 6, 147, 2, 19, 14, 22, 4, 2, 2, 2, 4, 22, 71, 87, 12, 16, 43, 2, 38, 76, 15, 13, 2, 4, 22, 17, 2, 17, 12, 16, 2, 18, 2, 5, 62, 2, 12, 8, 2, 8, 106, 5, 4, 2, 2, 16, 2, 66, 2, 33, 4, 130, 12, 16, 38, 2, 5, 25, 124, 51, 36, 135, 48, 25, 2, 33, 6, 22, 12, 2, 28, 77, 52, 5, 14, 2, 16, 82, 2, 8, 4, 107, 117, 2, 15, 2, 4, 2, 7, 2, 5, 2, 36, 71, 43, 2, 2, 26, 2, 2, 46, 7, 4, 2, 2, 13, 104, 88, 4, 2, 15, 2, 98, 32, 2, 56, 26, 141, 6, 194, 2, 18, 4, 2, 22, 21, 134, 2, 26, 2, 5, 144, 30, 2, 18, 51, 36, 28, 2, 92, 25, 104, 4, 2, 65, 16, 38, 2, 88, 12, 16, 2, 5, 16, 2, 113, 103, 32, 15, 16, 2, 19, 178, 32]
+##첫 번쨰 리뷰 데이터 셋의 내용을 정수로 변환
+print(train_target[:20])
+[1 0 0 1 0 0 1 0 1 0 1 0 0 0 0 0 1 1 0 1]
+#1이 긍정 0이 부정
+```
+
+→ num_words = 200 : 전체 데이터 셋에서 가장 자주 등장하는 단어 200개만 사용하겠다는 뜻 . 
+
+```python
+from sklearn.model_selection import train_test_split
+
+train_input, val_input, train_target, val_target = train_test_split(
+    train_input, train_target, test_size=0.2, random_state=42)
+    import numpy as np
+
+lengths = np.array([len(x) for x in train_input])
+print(np.mean(lengths), np.median(lengths))
+239.00925 178.0
+```
+
+→길이의 평균이 239 중앙값이 178
+
+```python
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+train_seq = pad_sequences(train_input, maxlen=100)
+print(train_seq.shape)
+(20000, 100)
+```
+
+![스크린샷 2025-12-05 120923.png](attachment:31e579cc-2b68-467b-85d4-51daf1bf0248:스크린샷_2025-12-05_120923.png)
+
+CF.
+
+```python
+print(train_seq[0])
+[ 10   4  20   9   2   2   2   5  45   6   2   2  33   2   8   2 142   2
+   5   2  17  73  17   2   5   2  19  55   2   2  92  66 104  14  20  93
+  76   2 151  33   4  58  12 188   2 151  12   2  69   2 142  73   2   6
+   2   7   2   2 188   2 103  14  31  10  10   2   7   2   5   2  80  91
+   2  30   2  34  14  20 151  50  26 131  49   2  84  46  50  37  80  79
+   6   2  46   7  14  20  10  10   2 158]
+print(train_input[0][-10:])
+[6, 2, 46, 7, 14, 20, 10, 10, 2, 158]
+print(train_seq[5])
+[  0   0   0   0   1   2 195  19  49   2   2 190   4   2   2   2 183  10
+  10  13  82  79   4   2  36  71   2   8   2  25  19  49   7   4   2   2
+   2   2   2  10  10  48  25  40   2  11   2   2  40   2   2   5   4   2
+   2  95  14   2  56 129   2  10  10  21   2  94   2   2   2   2  11 190
+  24   2   2   7  94   2   2  10  10  87   2  34  49   2   7   2   2   2
+   2   2   2   2  46  48  64  18   4   2]
+   val_seq = pad_sequences(val_input, maxlen=100)
+```
+
+→ 이 샘플의 패딩 값에 0이 없는 걸로 보아 100보다는 길이가 길었고 , 그럼 앞, 뒤 중 어떤 부분이 잘렸는지 확인해보면 제일 앞 부분이 잘렸다는 걸 알 수 있음.
+
+→ 패딩의 앞부분을 자르는 이유는 결국 마지막 순환층에서 그 전 타임스텝의 순환층까지의 결과를 다 출력하기 때문에 마지막 부분을 자르면 결과에 좋지 않은 영향을 미칠 수 있음.
+
+### 순환신경망 만들기
+
+```python
+from tensorflow import keras
+
+model = keras.Sequential()
+
+model.add(keras.layers.SimpleRNN(8, input_shape=(100, 200)))
+model.add(keras.layers.Dense(1, activation='sigmoid'))
+train_oh = keras.utils.to_categorical(train_seq)
+print(train_oh.shape)
+(20000, 100, 200)
+print(train_oh[0][0][:12])
+[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0.]
+print(np.sum(train_oh[0][0]))
+1.0
+val_oh = keras.utils.to_categorical(val_seq)
+model.summary()
+
+```
+
+예를 들어 I am a boy 라는 단어 하나하나 를 숫자 200개를 사용해 표현하는 것인데 , 다만 원-핫 인코딩 방식은 200개 중에 하나만 1이고 나머지는 모두 0으로 만들어 정수 사이에 있던 크기 속성을 없애는 방식.
+
+→ 비추임.
+
+### 순환 신경망 훈련하기
+
+```python
+rmsprop = keras.optimizers.RMSprop(learning_rate=1e-4)
+model.compile(optimizer=rmsprop, loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+checkpoint_cb = keras.callbacks.ModelCheckpoint('best-simplernn-model.keras',
+                                                save_best_only=True)
+early_stopping_cb = keras.callbacks.EarlyStopping(patience=3,
+                                                  restore_best_weights=True)
+
+history = model.fit(train_oh, train_target, epochs=100, batch_size=64,
+                    validation_data=(val_oh, val_target),
+                    callbacks=[checkpoint_cb, early_stopping_cb])
+```
+
+![스크린샷 2025-12-05 122018.png](attachment:a8ffeda9-1a25-405c-bb39-bc65b266abbd:스크린샷_2025-12-05_122018.png)
+
+### 단어 임베딩을 사용하기
+
+![스크린샷 2025-12-05 122212.png](attachment:cff13780-cd5f-417e-a954-3a4b3e422c95:스크린샷_2025-12-05_122212.png)
+
+```python
+model2 = keras.Sequential()
+
+model2.add(keras.layers.Embedding(200, 16, input_shape=(100,)))
+model2.add(keras.layers.SimpleRNN(8))
+model2.add(keras.layers.Dense(1, activation='sigmoid'))
+
+model2.summary()
+```
+
+→ 첫 번째 매개변수는 어휘 사전의 크기 : 200
+
+→ 두 번째 매개변수는 임베딩 벡터의 크기 : 16
+
+```python
+rmsprop = keras.optimizers.RMSprop(learning_rate=1e-4)
+model2.compile(optimizer=rmsprop, loss='binary_crossentropy',
+               metrics=['accuracy'])
+
+checkpoint_cb = keras.callbacks.ModelCheckpoint('best-embedding-model.keras',
+                                                save_best_only=True)
+early_stopping_cb = keras.callbacks.EarlyStopping(patience=3,
+                                                  restore_best_weights=True)
+
+history = model2.fit(train_seq, train_target, epochs=100, batch_size=64,
+                     validation_data=(val_seq, val_target),
+                     callbacks=[checkpoint_cb, early_stopping_cb])
+```
+
+![스크린샷 2025-12-05 122533.png](attachment:fa691abe-37fa-4b89-b8c0-c770d417d5ff:스크린샷_2025-12-05_122533.png)
+
+## Ch9-3 LSTM과 GRU 셀
+
+![스크린샷 2025-12-05 131739.png](attachment:492eae81-2a4d-42a0-b3eb-cdb0d3282ef3:스크린샷_2025-12-05_131739.png)
+
+### Cell state
+
+: 이전 상태에서 현재 상태까지 유지되는 정보의 흐름을 나타내며, 이 Cell state를 중추 삼아서 오래된 정보를 기억하고 새로운 정보를 적절하게 갱신 가능함.
+
+### Forget Gate(망각 게이트)
+
+ : 셀 상태의 정보를 지울 것인지 말 것인지를 결정함. 
+
+→ 이 값을 계산하기 위해 사용되는 활성화 함수는 Sigmoid 함수임
+
+→ value : 0 → 사라짐 else 그대로 전달 
+
+![화면 캡처 2025-12-05 132030.png](attachment:6ae58cae-bc6c-4f66-9bdd-5d8dd9b8c878:화면_캡처_2025-12-05_132030.png)
+
+### Input Gate(입력 게이트)
+
+: 새로운 정보를 어떻게 반영할 것인가에 대한 결정을 내림
+
+→ sigmoid 함수와 tanh 함수를 사용함 
+
+→ sigmoid 함수는 후보 값을 얼마나 전달할지 결정을 내리는 값 그리고 tan함수는 rnn에서 사용되는 출력 계산 방법과 동일함. 이 둘을 곱해서 셀 상태에 더 하면 다음 단계를 위해 보내는 셀 state가 결정됨. 
+
+![스크린샷 2025-12-05 132319.png](attachment:38f13485-07d4-4151-8b2e-3b961ec7d6ea:스크린샷_2025-12-05_132319.png)
+
+### Output Gate
+
+: 나온 값을 그대로 출력하지 않고 출력이 얼마나 중요한지 조절하기 위해 은닉 상태와 현재 입력에 대해 시그모이드 함수를 적용해 0~1 사이의 값을 만든 후 출력하고자 하는 신호와 곱해 크기를 조절한 후 출력을 함 . 
+
+1.input 에 데이터를 태워서 cell state의 어느 부분을 output으로 내보낼 지를 정한다.
+
+1. cell state를 tanh에 태워서 -1~1 사이의 값ㅇ르 받은 뒤에 방금 전에 계산한 sigmoid gate의 output과 곱한다.
+
+![화면 캡처 2025-12-05 133117.png](attachment:59c6cfe6-d34d-4a1f-98d8-d4c104631ce2:화면_캡처_2025-12-05_133117.png)
+
+![화면 캡처 2025-12-05 132806.png](attachment:dd9c018f-0b1b-4fc6-930b-2ce05d17e73e:화면_캡처_2025-12-05_132806.png)
+
+### GRU : Gated Recuurent Unit
+
+→ forget gate + input gate = update gate 
+
+→cell state + hidden state  : reset gate 
+
+![화면 캡처 2025-12-05 133441.png](attachment:37013842-9966-4f6d-9eaf-3c599b5aef4f:화면_캡처_2025-12-05_133441.png)
+
+reset gate : 이전 hidden state의 값을 얼마나 활용할 것인지에 대한 정보 
+
+→ 2번째 식을 의미함.
+
+update gate : 과거와 현재의 정보를 각각 얼마나 반영할지에 대한 비율을 구하는 것이 핵심.
+
+→ (1) 식을 통해서 구한  결과 z는 현재 정보를 얼마나 사용할지 반영함
+
+→1-z는 과거 정보에 대해서 얼마나 사용할지 반영함
+
+→ (2)의 식은 (3)의 식에도 활용이 되는데  (3)의 식은 전  시점의 hidden state에 reset gate를 곱하여 계산한다. 
+
+### LSTM 신경망 훈련하기
+
+```python
+from tensorflow.keras.datasets import imdb
+from sklearn.model_selection import train_test_split
+
+(train_input, train_target), (test_input, test_target) = imdb.load_data(
+    num_words=500)
+
+train_input, val_input, train_target, val_target = train_test_split(
+    train_input, train_target, test_size=0.2, random_state=42)
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+train_seq = pad_sequences(train_input, maxlen=100)
+val_seq = pad_sequences(val_input, maxlen=100)
+
+from tensorflow import keras
+
+model = keras.Sequential()
+
+model.add(keras.layers.Embedding(500, 16, input_shape=(100,)))
+model.add(keras.layers.LSTM(8))
+model.add(keras.layers.Dense(1, activation='sigmoid'))
+
+model.summary()
+
+```
+
+```python
+rmsprop = keras.optimizers.RMSprop(learning_rate=1e-4)
+model.compile(optimizer=rmsprop, loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+checkpoint_cb = keras.callbacks.ModelCheckpoint('best-lstm-model.keras',
+                                                save_best_only=True)
+early_stopping_cb = keras.callbacks.EarlyStopping(patience=3,
+                                                  restore_best_weights=True)
+
+history = model.fit(train_seq, train_target, epochs=100, batch_size=64,
+                    validation_data=(val_seq, val_target),
+                    callbacks=[checkpoint_cb, early_stopping_cb])
+```
+
+![스크린샷 2025-12-05 134155.png](attachment:fcfc184c-7b01-46f5-ad55-e25338641c3e:스크린샷_2025-12-05_134155.png)
+
+→ 모델에 dropout적용
+
+```python
+model2 = keras.Sequential()
+
+model2.add(keras.layers.Embedding(500, 16, input_shape=(100,)))
+model2.add(keras.layers.LSTM(8, dropout=0.3))
+model2.add(keras.layers.Dense(1, activation='sigmoid'))
+```
+
+### 2개의 층을 연결하기
+
+```python
+model3 = keras.Sequential()
+
+model3.add(keras.layers.Embedding(500, 16, input_shape=(100,)))
+model3.add(keras.layers.LSTM(8, dropout=0.3, return_sequences=True))
+model3.add(keras.layers.LSTM(8, dropout=0.3))
+model3.add(keras.layers.Dense(1, activation='sigmoid'))
+
+model3.summary()
+```
+
+→ return_sequences : 모든 타임스텝의 은닉 상태를 출력하려면 마지막을 제외한 다른 모든 순환에서 return_seuquences 매개변수를 True로 한다 . 
+
+### GRU 훈련하기
+
+```python
+model4 = keras.Sequential()
+
+model4.add(keras.layers.Embedding(500, 16, input_shape=(100,)))
+model4.add(keras.layers.GRU(8))
+model4.add(keras.layers.Dense(1, activation='sigmoid'))
+
+model4.summary()
+
+rmsprop = keras.optimizers.RMSprop(learning_rate=1e-4)
+model4.compile(optimizer=rmsprop, loss='binary_crossentropy',
+               metrics=['accuracy'])
+
+checkpoint_cb = keras.callbacks.ModelCheckpoint('best-gru-model.keras',
+                                                save_best_only=True)
+early_stopping_cb = keras.callbacks.EarlyStopping(patience=3,
+                                                  restore_best_weights=True)
+
+history = model4.fit(train_seq, train_target, epochs=100, batch_size=64,
+                     validation_data=(val_seq, val_target),
+                     callbacks=[checkpoint_cb, early_stopping_cb])
+```

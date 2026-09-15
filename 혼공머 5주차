@@ -1,0 +1,863 @@
+## 06-1. 군집 알고리즘
+
+> https://bit.ly/hg-06-1
+> 
+
+### 1. 타깃을 모르는 비지도 학습
+
+- 타깃을 모르는 사진을 종류별로 분류하길 원함 → **비지도 학습**
+    
+    → 사진의 픽셀값의 평균 → 비슷한 과일??
+    
+- 과일 사진 데이터 준비
+    - 준비된 데이터는 흑백 사진 → npy 파일로 저장 → 파일을 읽기 위해 코랩으로 다운
+        
+        ```python
+        !wget https://bit.ly/fruits_300_data -O fruits_300.npy
+        ```
+        
+        - 300개의 과일 데이터를 다운
+    - 데이터 로드
+        
+        ```python
+        import numpy as np
+        import matplotlib.pyplot as plt
+        
+        fruits = np.load('fruits_300.npy')
+        
+        print(fruits.shape)
+        - (300, 100, 100)
+        ```
+        
+        - 300개의 샘플, 이미지의 크기 100 * 100
+    - 첫 번째 데이터를 확인
+        
+        ```python
+        print(fruits[0, 0, :])
+        - [  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   2   1
+           2   2   2   2   2   2   1   1   1   1   1   1   1   1   2   3   2   1
+           2   1   1   1   1   2   1   3   2   1   3   1   4   1   2   5   5   5
+          19 148 192 117  28   1   1   2   1   4   1   1   3   1   1   1   1   1
+           2   2   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1
+           1   1   1   1   1   1   1   1   1   1]
+        ```
+        
+    - 흑백 이미지를 시각적으로 확인
+        
+        ```python
+        plt.imshow(fruits[0], cmap='gray')
+        plt.show()
+        ```
+        
+        ![image.png](attachment:4eb63dae-7974-47ee-840a-8d598ba28097:image.png)
+        
+        - 사과와 같이 생김
+            - 픽셀값이 0에 가까울수록 검게 / 높을수록 밝게
+            - 흑백 이미지 사진을 넘파이 배열로 변환할 때 반전시킴
+                
+                → 사과에 관심 → 컴퓨터는 흰색 바탕에 관심을 가지므로 반전시켜줌
+                
+                why? 컴퓨터는 출력을 만들기 위해 곱셈, 덧셈을 하므로 0이 되는 값들은 의미가 딱히 X
+                
+        - 우리가 보기 쉽게 다시 반전시킬 수 있음
+            
+            ```python
+            plt.imshow(fruits[0], cmap='gray_r')
+            plt.show()
+            ```
+            
+            ![image.png](attachment:4d3b7ae2-8c9b-4098-90a2-13a43ebe9c6a:image.png)
+            
+    - 나머지 사진들도 확인
+        
+        ```python
+        fig, axs = plt.subplots(1, 2)
+        axs[0].imshow(fruits[100], cmap='gray_r')
+        axs[1].imshow(fruits[200], cmap='gray_r')
+        plt.show()
+        ```
+        
+        ![image.png](attachment:42e24d77-b21b-4141-b556-8133899927cc:image.png)
+        
+        - subplot(1,2) : 하나의 행과 2개의 열로 그림을 표현
+        - axs는 2개의 서브 그래프를 담고 있는 배열
+            
+            → 처음 100개는 사과, 그 다음 100개는 파인애플, 마지막 100개는 바나나
+            
+
+### 2. 픽셀값 분석하기
+
+- 100 * 100 이미지를 1차원 배열로 만듦
+- fruits 배열에서 순서대로 100개씩 선택하여 과일별로 분류
+    
+    ```python
+    apple = fruits[0:100].reshape(-1, 100*100)
+    pineapple = fruits[100:200].reshape(-1, 100*100)
+    banana = fruits[200:300].reshape(-1, 100*100)
+    
+    print(apple.shape)
+    - (100, 10000)
+    ```
+    
+    - axis=0 : 행방향 계산 (열에 대해 계산) / axis=1 : 열방향 계산 (행에 대한 계산)
+    - reshape(-1, 100 * 100) : -1로 지정하면 자동으로 남은 차원을 할당
+- 넘파이 mean() 메서드를 사용 → 각 과일에 따른 평균 픽셀값을 확인
+    - axis = 1로 지정하여 평균을 계산
+        
+        ```python
+        print(apple.mean(axis=1))
+        - [ 88.3346  97.9249  87.3709  98.3703  92.8705  82.6439  94.4244  95.5999
+          90.681   81.6226  87.0578  95.0745  93.8416  87.017   97.5078  87.2019
+          88.9827 100.9158  92.7823 100.9184 104.9854  88.674   99.5643  97.2495
+          94.1179  92.1935  95.1671  93.3322 102.8967  94.6695  90.5285  89.0744
+          97.7641  97.2938 100.7564  90.5236 100.2542  85.8452  96.4615  97.1492
+          90.711  102.3193  87.1629  89.8751  86.7327  86.3991  95.2865  89.1709
+          96.8163  91.6604  96.1065  99.6829  94.9718  87.4812  89.2596  89.5268
+          93.799   97.3983  87.151   97.825  103.22    94.4239  83.6657  83.5159
+         102.8453  87.0379  91.2742 100.4848  93.8388  90.8568  97.4616  97.5022
+          82.446   87.1789  96.9206  90.3135  90.565   97.6538  98.0919  93.6252
+          87.3867  84.7073  89.1135  86.7646  88.7301  86.643   96.7323  97.2604
+          81.9424  87.1687  97.2066  83.4712  95.9781  91.8096  98.4086 100.7823
+         101.556  100.7027  91.6098  88.8976]
+        ```
+        
+        - 100개의 픽셀 평균값 계산
+    - 히스토그램 그려서 확인
+        
+        ```python
+        plt.hist(np.mean(apple, axis=1), alpha=0.8)
+        plt.hist(np.mean(pineapple, axis=1), alpha=0.8)
+        plt.hist(np.mean(banana, axis=1), alpha=0.8)
+        plt.legend(['apple', 'pineapple', 'banana'])
+        plt.show()
+        ```
+        
+        ![image.png](attachment:bfaad5cf-0cd6-4222-98a5-42d7b88f944c:image.png)
+        
+        - 바나나의 평균 값은 40 아래에 집중
+        - 사과와 파인애플은 90-100에 집중
+            
+            → 바나나는 구분될 수 있지만, 사과와 파인애플은 쉽지 않음
+            
+            why? 형태가 동그랗고 크기가 비슷
+            
+            → 샘플의 평균값 대신 픽셀별 평균값을 비교하길 원함
+            
+- axis = 0으로 지정하면 픽셀 10,000개에 대해 그래프로 확인
+    
+    ```python
+    fig, axs = plt.subplots(1, 3, figsize=(20, 5))
+    axs[0].bar(range(10000), np.mean(apple, axis=0))
+    axs[1].bar(range(10000), np.mean(pineapple, axis=0))
+    axs[2].bar(range(10000), np.mean(banana, axis=0))
+    plt.show()
+    ```
+    
+    ![image.png](attachment:8cb752a3-063d-4b2b-acab-714724643651:image.png)
+    
+    - 과일마다 값이 높은 구간이 다른 것을 확인 가능
+- 픽셀의 평균값을 100 * 100 크기로 바꿔 이미지로 출력
+    
+    ```python
+    apple_mean = np.mean(apple, axis=0).reshape(100, 100)
+    pineapple_mean = np.mean(pineapple, axis=0).reshape(100, 100)
+    banana_mean = np.mean(banana, axis=0).reshape(100, 100)
+    
+    fig, axs = plt.subplots(1, 3, figsize=(20, 5))
+    axs[0].imshow(apple_mean, cmap='gray_r')
+    axs[1].imshow(pineapple_mean, cmap='gray_r')
+    axs[2].imshow(banana_mean, cmap='gray_r')
+    plt.show()
+    ```
+    
+    ![image.png](attachment:a5aad652-5a43-467c-ab7d-da4e380a6d4e:image.png)
+    
+    - 픽셀 위치에 따라 값의 크기가 차이가 난다는 것을 알 수 있음
+
+### 3. 평균값과 가까운 사진 고르기
+
+- 사과 사진의 평균값인 apple_mean과 가장 가까운 사진을 골라보자!
+    - 절댓값 오차를 사용
+        
+        ```python
+        abs_diff = np.abs(fruits - apple_mean)
+        abs_mean = np.mean(abs_diff, axis=(1,2))
+        print(abs_mean.shape)
+        - (300,)
+        ```
+        
+        - axis=(1, 2) : 1번 축과 2번 축 방향으로 평균을 구함
+            - axis = (0) : 300개의 이미지를 같은 위치끼리 평균
+    - 오차가 가장 작은 샘플 100개를 선택 → np.argsort () 함수로 올림차순으로 나열한 abs_mean 배열의 인덱스를 반환 → 처음 100개로 10 * 10 그래프 그림
+        
+        ```python
+        apple_index = np.argsort(abs_mean)[:100]
+        fig, axs = plt.subplots(10, 10, figsize=(10,10))
+        for i in range(10):
+            for j in range(10):
+                axs[i, j].imshow(fruits[apple_index[i*10 + j]], cmap='gray_r')
+                axs[i, j].axis('off')
+        plt.show()
+        ```
+        
+        ![image.png](attachment:1ac5a5f9-19c5-4ebf-a694-f611b3f891f7:image.png)
+        
+        - subplots () 함수로 100개의 서브 그래프를 생성
+            - axs (10, 10) : 2차원 배열로 서브 그래프 위치 지정
+            - axis(’off’)로 좌표축을 그리지 않음 → ‘on’이면 생성
+        - apple_mean과 가까운 사진 100개 모두 사과임을 확인
+- 비슷한 샘플끼리 그룹으로 모으는 작업 : **군집**
+- 군집 알고리즘에서 만든 그룹 : **클러스터**
+    - 우리가 타깃값을 알고 있어서 찾을 수 있었지만, 실제론 샘플의 평균값을 미리 알 수 없음 !
+        
+        → **k-평균 알고리즘**
+        
+
+### 4. 비슷한 샘플끼리 모으기 (문제해결 과정)
+
+- 어떤 과일 사진을 올릴지 알 수 없음 → 미리 타깃값을 준비하여 훈련하기 어려움
+- 타깃값이 없을 때, 데이터 구조를 파악하는 머신러닝 방식 : **비지도 학습**
+    - 스스로 데이터가 어떻게 구성되어 있는지 분석
+- 대표적인 비지도 학습 문제 : 군집 → 비슷한 샘플끼리 모으는 작업
+    - 평균을 이용했지만, 실제로는 타깃의 평균을 구할 수 없음!
+
+### 5. 바나나 평균과 비슷한 사진 100장 찾기
+
+```python
+abs_diff = np.abs(fruits - banana_mean)
+abs_mean = np.mean(abs_diff, axis=(1,2))
+
+banana_index = np.argsort(abs_mean)[:100]
+fig, axs = plt.subplots(10, 10, figsize=(10,10))
+for i in range(10):
+    for j in range(10):
+        axs[i, j].imshow(fruits[banana_index[i*10 + j]], cmap='gray_r')
+        axs[i, j].axis('off')
+plt.show()
+```
+
+![image.png](attachment:cd24c045-e150-4579-ac52-4141351847b9:image.png)
+
+## 06-2. k-평균
+
+> https://bit.ly/hg-06-2
+> 
+- 앞 절의 군집 알고리즘은 우리가 이미 사진을 알고 있었음!
+    
+    → 실제로는 모르는데 어떻게 해야할까?!
+    
+- **k-평균 군집 알고리즘** : 군집 알고리즘이 평균값을 자동으로 찾아줌!
+    - 이 평균값이 클러스터의 중심에 위치하므로 **클러스터 중심** 또는 **센트 로이드**라고 부름
+
+### 1. k-평균 알고리즘
+
+1. 무작위로 k개의 클러스터 중심을 정함
+    - 이 중심에서 샘플이 하나도 할당되지 않는 클러스터가 나올 수 있음 → 중심 랜덤 재초기화 or 다른 방법 (k-means++)
+        - k-means++ : 첫 중심만 임의로 고르고 다음 중심은 기존 중심과의 거리 제곱에 비례하여 샘플링
+        - 가장 큰 군집에서 점 하나를 이동
+2. 각 샘플에서 가장 가까운 클러스터 중심을 찾아 해당 클러스터의 샘플로 지정
+3. 클러스터에 속한 샘플의 평균값으로 클러스터 중심을 변경
+4. 중심에 변화가 없을 때까지 2번으로 돌아가 반복
+    
+    ![image.png](attachment:ab3d9b94-fb88-4ba7-9805-6179601ea993:image.png)
+    
+    - 중심을 계속해서 이동해 가면서 클러스터를 새로 만들어 가는데, 이때 이동된 클러스터 중심에서 새로 만들어진 샘플이 전과 동일할 때, 변동이 없으므로 k-평균 알고리즘을 종료
+        
+        → 처음에는 랜덤하게 선택하지만 점차 가까운 샘플의 중심으로 이동시키며 중심을 찾음
+        
+
+### 2. KMeans 클래스
+
+- 앞의 절과 마찬가지로 데이터 준비
+    
+    ```python
+    !wget https://bit.ly/fruits_300_data -O fruits_300.npy
+    
+    import numpy as np
+    fruits = np.load('fruits_300.npy')
+    fruits_2d = fruits.reshape(-1, 100*100)
+    ```
+    
+    - 3차원 배열 → 2차원 배열로 변경
+- sklearn.cluster 모듈의 KMeans 클래스에 k-평균 알고리즘이 구현
+    
+    ```python
+    from sklearn.cluster import KMeans
+    
+    km = KMeans(n_clusters=3, random_state=42)
+    km.fit(fruits_2d)
+    ```
+    
+    - 결과는 KMeans 클래스 객체의 labels_ 속성에 저장
+    - n_clusters=3으로 지정 : labels_ 배열의 값은 0, 1, 2 중 하나
+        - n_clusters의 기본값은 8
+        - n_init는 반복횟수를 지정 : 기본값은 10
+        - max_iter는 k-평균 알고리즘의 한 번의 실행에서 최적의 값을 찾기 위해 반복할 수 있는 최대 횟수 : 기본값은 200
+        - 레이블 값에 어떤 의미도 X, 단지 어떤 클러스터에 포함 되는지만 확인
+        
+        ```python
+        print(km.labels_)
+        - [2 2 2 2 2 0 2 2 2 2 2 2 2 2 2 2 2 2 0 2 2 2 2 2 2 2 0 2 2 2 2 2 2 2 2 2 2
+         2 2 2 2 2 0 2 0 2 2 2 2 2 2 2 0 2 2 2 2 2 2 2 2 2 0 0 2 2 2 2 2 2 2 2 0 2
+         2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 2 2 2 2 2 2 2 0 0 0 0 0 0 0 0 0 0 0
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+         1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+         1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+         1 1 1 1]
+        ```
+        
+    - 각 클러스터의 샘플 수를 확인
+        
+        ```python
+        print(np.unique(km.labels_, return_counts=True))
+        - (array([0, 1, 2], dtype=int32), array([112,  98,  90]))
+        ```
+        
+        - 각 클러스터가 어느정도 분류가 된 것을 확인
+    - 각 클러스터가 나타내는 이미지를 확인
+        
+        ```python
+        import matplotlib.pyplot as plt
+        
+        def draw_fruits(arr, ratio=1):
+            n = len(arr)    # n은 샘플 개수입니다
+            # 한 줄에 10개씩 이미지를 그립니다. 샘플 개수를 10으로 나누어 전체 행 개수를 계산합니다.
+            rows = int(np.ceil(n/10))
+            # 행이 1개 이면 열 개수는 샘플 개수입니다. 그렇지 않으면 10개입니다.
+            cols = n if rows < 2 else 10
+            fig, axs = plt.subplots(rows, cols,
+                                    figsize=(cols*ratio, rows*ratio), squeeze=False)
+            for i in range(rows):
+                for j in range(cols):
+                    if i*10 + j < n:    # n 개까지만 그립니다.
+                        axs[i, j].imshow(arr[i*10 + j], cmap='gray_r')
+                    axs[i, j].axis('off')
+            plt.show()
+        ```
+        
+        - draw_fruits() : 샘플 개수, 너비, 높이의 3차원 배열 → 가로로 10개씩 이미지 출력
+            - figsize : ratio 매개변수에 비례하여 커짐 (기본값 : 1)
+            - 2중 for 반복문을 사용하여 이미지를 행을 하나씩 채우는 방식으로 그림
+- 레이블이 0인 과일 사진을 그리기
+    
+    ```python
+    draw_fruits(fruits[km.labels_==0])
+    ```
+    
+    ![image.png](attachment:2e5dc53e-8a38-469d-9b60-b0e5e0d2c776:image.png)
+    
+    - km.labels_==0 : km.labels_배열에서 0인 값의 위치는 True로 True인 원소들만 선택 (불리언 인덱싱)
+    - 레이블 0으로 클러스터링된 112개의 이미지를 모두 출력
+- 다른 레이블도 확인
+    
+    ```python
+    draw_fruits(fruits[km.labels_==1])
+    ```
+    
+    ![image.png](attachment:b8b9ef7f-40c0-4768-862a-047203894db5:image.png)
+    
+    ```python
+    draw_fruits(fruits[km.labels_==2])
+    ```
+    
+    ![image.png](attachment:fdabc9c8-51ce-4a21-aaa0-1670f1fcab47:image.png)
+    
+    - 레이블이 1, 2인 클러스터들은 각각 바나나와 사과로만 이루어짐
+        
+        → 레이블이 0일 때의 샘플을 제외하고 레이블이 1, 2일 때는 스스로 비슷한 샘플들을 잘 분류함!
+        
+
+### 3. 클러스터 중심
+
+- KMeans 클래스가 최종적으로 찾은 클러스터 중심은 cluster_centers_ 속성에 저장
+    
+    ```python
+    draw_fruits(km.cluster_centers_.reshape(-1, 100, 100), ratio=3)
+    ```
+    
+    ![image.png](attachment:26b16912-6d80-49a4-b37c-927930795198:image.png)
+    
+    - 위 배열은 fruits_2d 샘플의 클러스터 중심 → 이미지로 출력 : 100 * 100 크기의 2차원 배열
+- transform () : 훈련 데이터 샘플에서 클러스터 중심까지의 거리로 변환
+    - 이는 StandardScaler 클래스처럼 특성값을 변환하는 도구
+    - 인덱스가 100인 샘플에 transform () 메서드를 적용
+        
+        ```python
+        print(km.transform(fruits_2d[100:101]))
+        - [[3400.24197319 8837.37750892 5279.33763699]]
+        ```
+        
+        - fruits_2d[100]으로 사용하면 2차원 배열을 만들어야 하는데 크기 (10000, ) 크기의 배열이 되므로 에러가 발생 → 슬라이싱 연산자를 사용해 (1, 10000) 크기의 배열을 전달
+        - 첫 번째 클러스터까지의 거리가 3400.2로 가장 작음 → 레이블 0에 속할 것으로 기대
+    - predict () 메서드 : 가장 가까운 클러스터 중심을 예측 클래스로 출력
+        
+        ```python
+        print(km.predict(fruits_2d[100:101]))
+        - [0]
+        ```
+        
+        - 위의 예측과 마찬가지로 레이블 0으로 예측
+    - 샘플을 확인
+        
+        ```python
+        draw_fruits(fruits[100:101])
+        ```
+        
+        ![image.png](attachment:9cb0004c-4539-47ff-bc87-8f3d955219fa:image.png)
+        
+    - 클러스터 중심을 옮기면서 최적의 클러스터를 찾음
+        
+        ```python
+        print(km.n_iter_)
+        - 4
+        ```
+        
+        - n_iter_ 속성에 알고리즘이 반복한 횟수 저장
+- 위 알고리즘은 타깃값을 사용하진 않았지만, 타깃의 종류의 개수를 정함
+    
+    → 사실 정보를 사용한 셈
+    
+    → 그렇다면 n_clusters를 어떻게 지정??!
+    
+
+### 4. 최적의 k 찾기
+
+- k-평균 알고리즘의 단점 : 사전에 클러스터의 개수를 지정해야 함
+    - 어떻게 적절한 k 값을 찾을까?
+- 사실 완벽한 방법은 X
+- 적절한 클러스터 개수를 찾기 위한 대표적인 방법 : **엘보우 방법**
+    - k-평균 알고리즘은 클러스터 중심과 클러스터에 속한 샘플 사이의 거리를 잴 수 있음 → 이 거리의 제곱 합 : **이너셔(inertia)**
+        - 이는 클러스터에 속한 샘플이 얼마나 가깝게 모여 있는지 나타내는 값
+        - 일반적으로 클러스터 개수 ↑ → 클러스터 개개의 크기 ↓ → 이너셔 ↓
+    - 클러스터 개수를 늘려가며 이너셔의 변화를 관찰 → 최적의 클러스터 개수를 찾는 방법
+    - 클러스터의 개수를 증가시킬 때, 이너셔가 감소하는 속도가 꺾이는 지점 → 밀집된 정도가 크게 개선되지 X → 이 지점을 최적의 클러스터 개수로 생각
+        
+        ![image.png](attachment:7ea4d77b-c3a5-4ec5-9af7-3ade88a6c4b2:image.png)
+        
+    - 과일 데이터셋으로 이너셔 계산
+        - KMeans 클래스는 자동으로 이너셔를 계산하여 inertia_ 속성으로 제공
+            
+            ```python
+            inertia = []
+            for k in range(2, 7):
+                km = KMeans(n_clusters=k, n_init='auto', random_state=42)
+                km.fit(fruits_2d)
+                inertia.append(km.inertia_)
+            
+            plt.plot(range(2, 7), inertia)
+            plt.xlabel('k')
+            plt.ylabel('inertia')
+            plt.show()
+            ```
+            
+            ![image.png](attachment:6eb6ec49-2906-47f4-b1c0-3dfb1ec23a45:image.png)
+            
+            - 클러스터의 개수를 2~6까지 바꾸며 총 5번의 훈련
+            - fit () 메서드로 모델을 훈련한 후 inertia_ 속성에 저장된 이너셔 값을 inertia 리스트에 추가 → 그래프로 출력
+            - 꺾이는 지점이 명확하진 않지만, k=3에서 그래프의 기울기가 조금 변화하게 됨
+
+### 5. 과일을 자동으로 분류하기 (문제해결 과정)
+
+- 실전에서는 타깃값을 모름
+- k-평균 알고리즘
+    - 속도가 빠르며 이해하기 쉬움
+    - 어떤 클러스터에 소속 → labels_ 속성에 저장
+    - transform () : 각 클러스터까지의 거리
+        - predict () : 새로운 샘플에 대해 가장 가까운 클러스터를 예측값으로 출력
+- 단점 : 클러스터의 개수를 미리 지정 → 사실 몇 개로 분류할지 몰라!
+- 얼마나 밀집되어 있는지 나타내는 이너셔 → 엘보우 방법으로 클러스터의 개수를 예측
+- inertia_ : 자동으로 이너셔를 계산하여 제공 → 이너셔가 줄어드는 속도가 꺾이는 지점 : 최적의 클러스터 개수
+- 클러스터 중심까지 거리를 특성으로 사용 → 훈련 데이터의 차원을 크게 줄일 수 있음 → 차원 축소를 통해 알고리즘의 속도 ↑↑!!
+
+## 06-3. 주성분 분석
+
+> https://bit.ly/hg-06-3
+> 
+- 너무 많은 사진으로 저장 공간이 부족 → 군집이나 분류에 영향을 끼치지 않으며 사진의 용량을 줄이기 원함
+    
+    → 차원 축소!!
+    
+
+### 1. 차원과 차원 축소
+
+- 데이터가 가진 속성 : 특성
+- 과일 사진에서 10,000개의 픽셀 ⇔ 10,000개의 특성 ⇔ 10,000개의 차원 (3장 : 특성 공학과 규제)
+    
+    → 차원을 줄이면 저장 공간을 크게 절약할 수 있음
+    
+    cf) 다차원 배열에서 차원은 배열의 축 개수 / 1차원 배열일 경우 원소의 개수를 의미 
+    
+- 비지도 학습 중 하나인 **차원 축소** 알고리즘
+    - 특성이 많으면 선형 모델의 성능 ↑, but 과대적합의 문제
+        
+        → 데이터를 가장 잘 나타내는 일부 특성만을 사용하여 데이터 크기 ↓, 지도학습 모델의 성능 ↑
+        
+    - 이렇게 줄어든 차원에서 다시 원본 차원으로 복원 가능!
+- 대표적인 차원 축소 알고리즘 : **주성분 분석 (PCA)**
+
+### 2. 주성분 분석 소개
+
+- 주성분 분석은 데이터에 있는 분산이 큰 방향을 찾는 것
+    - 분산이 큰 방향을 데이터로 잘 표현하는 벡터를 생각
+
+![image.png](attachment:3e021762-4cba-42b5-8d04-7a61688e4578:image.png)
+
+![image.png](attachment:0537bc1f-6fcc-4f53-a492-bb16c83af1e3:image.png)
+
+- 위 데이터는 x_1, x_2 총 2개의 특성 → 가장 잘 표현하는 방향을 찾음
+    
+    ![image.png](attachment:5e9ed3c8-58ce-4b35-8c07-4e4c46eae1ab:image.png)
+    
+    - 앞에서의 직선이 원점에서 출발한다면 위와 같이 두 원소로 이루어진 벡터로 쓸 수 있음 (사이킷런에서 자동으로 원점에 맞춰줌)
+        - 위에서 찾은 벡터를 **주성분**이라고 부름
+        - 이 주성분 벡터는 원본 데이터에 있는 어떤 방향을 의미
+            
+            → 주성분 벡터의 원소 개수는 원본 데이터셋의 특성의 수와 같음
+            
+    - 원본 데이터는 주성분을 이용해 차원을 줄일 수 있음!!
+        
+        ex) 샘플 데이터 s(4,2)를 주성분에 직각으로 투영하면 1차원 데이터 p(4.5)를 만들 수 있음
+        
+        ![image.png](attachment:63fbefa1-5eee-4763-9e12-00e8627c04c9:image.png)
+        
+        - 주성분으로 바꾼 데이터는 차원이 줄어들게 됨
+        - 주성분이 가장 분산이 큰 방향이므로 주성분에 투영한 데이터는 원본의 특성을 가장 잘 나타내고 있을 것!
+    - 첫 번째 주성분을 찾고 이 벡터에 수직이고 분산이 가장 큰 다음 방향을 찾음 → 두번째 주성분
+        - 위의 경우는 2차원이기 때문 → 주성분의 방향은 하나뿐
+            
+            ![image.png](attachment:2dbb4f2a-a723-41fc-816a-469f9e170ece:image.png)
+            
+            - 일반적으로 주성분은 원본의 특성 수만큼 찾을 수 있음!
+
+### 3. PCA 클래스
+
+- 과일 사진 데이터 불러오기
+    
+    ```python
+    !wget https://bit.ly/fruits_300_data -O fruits_300.npy
+    import numpy as np
+    fruits = np.load('fruits_300.npy')
+    fruits_2d = fruits.reshape(-1, 100*100)
+    ```
+    
+- sklearn.decomposition 모듈 아래 PCA 클래스로 주성분 분석 알고리즘 제공
+    
+    ```python
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=50)
+    pca.fit(fruits_2d)
+    ```
+    
+    - n_components : 주성분의 개수 지정
+    - 비지도 학습이므로 fit() 메서트에 타깃값 제공 X
+- 주성분의 크기를 확인
+    
+    ```python
+    print(pca.components_.shape)
+    - (50, 10000)
+    ```
+    
+    - n_components=50으로 지정 → 50개의 주성분
+    - 두 번째 차원은 원본 데이터의 특성 개수와 같음 (10,000)
+- 주성분을 이미지로 출력해서 확인
+    
+    ```python
+    import matplotlib.pyplot as plt
+    
+    def draw_fruits(arr, ratio=1):
+        n = len(arr)    # n은 샘플 개수입니다
+        # 한 줄에 10개씩 이미지를 그립니다. 샘플 개수를 10으로 나누어 전체 행 개수를 계산합니다.
+        rows = int(np.ceil(n/10))
+        # 행이 1개 이면 열 개수는 샘플 개수입니다. 그렇지 않으면 10개입니다.
+        cols = n if rows < 2 else 10
+        fig, axs = plt.subplots(rows, cols,
+                                figsize=(cols*ratio, rows*ratio), squeeze=False)
+        for i in range(rows):
+            for j in range(cols):
+                if i*10 + j < n:    # n 개까지만 그립니다.
+                    axs[i, j].imshow(arr[i*10 + j], cmap='gray_r')
+                axs[i, j].axis('off')
+        plt.show()
+    ```
+    
+    ```python
+    draw_fruits(pca.components_.reshape(-1, 100, 100))
+    ```
+    
+    ![image.png](attachment:ff4d3b4e-8496-4e21-b48b-96281c6d6db0:image.png)
+    
+    - 원본 데이터에서 가장 분산이 큰 방향을 순서대로 나타낸 것
+    - 찾은 주성분을 토대로 원본 데이터에 투영하여 특성의 개수를 10,000개 → 50개로 줄이기
+        - 원본 데이터를 각 주성분으로 분해하는 것과 같음
+- 차원 줄이기
+    
+    ```python
+    print(fruits_2d.shape)
+    - (300, 10000)
+    
+    fruits_pca = pca.transform(fruits_2d)
+    print(fruits_pca.shape)
+    - (300, 50)
+    ```
+    
+    - fruits_2d는 (300, 10,000)크기의 배열 : 10,000개의 픽셀을 가진 300개의 이미지 → (300, 50) : 50개의 특성을 가진 데이터로 차원 축소
+        - 1/200으로 줄어듦!
+
+→ 원상 복구 가능???
+
+### 4. 원본 데이터 재구성
+
+- 10,000개의 특성을 50개로 줄이면서 손실은 불가피
+    
+    → 분산이 가장 큰 방향으로 투영했으므로 원본 데이터를 상당 부분 재구성 가능!
+    
+- 복원 실행
+    
+    ```python
+    fruits_inverse = pca.inverse_transform(fruits_pca)
+    print(fruits_inverse.shape)
+    - (300, 10000)
+    ```
+    
+    - inverse_transform () : 특성을 복원
+        - 10,000개의 특성을 복원
+            
+            → 100 * 100 크기로 바꿔 100개씩 나누어 출력
+            
+        
+        ```python
+        	fruits_reconstruct = fruits_inverse.reshape(-1, 100, 100)
+        
+        	for start in [0, 100, 200]:
+            draw_fruits(fruits_reconstruct[start:start+100])
+            print("\n")
+        ```
+        
+
+![image.png](attachment:66a04f70-1051-4a2b-9f00-b6b97306eeca:image.png)
+
+![image.png](attachment:7f934d14-9033-43bd-a7e1-2e8259b440b2:image.png)
+
+![image.png](attachment:edeaff14-433b-45f7-ba44-25daa355c5b9:image.png)
+
+- 사진을 확인해보면 거의 모든 과일이 잘 복원 → 얼마나 보존하고 있는 것일까???
+
+### 5. 설명된 분산
+
+- 주성분이 원본 데이터의 분산을 얼마나 잘 나타내는가? : **설명된 분산**
+- explained_variance_ratio_에 각 주성분의 설명된 분산 비율이 기록
+    - 당연히 뒤로 갈수록 분산 비율이 작아짐
+        
+        ```python
+        print(np.sum(pca.explained_variance_ratio_))
+        - 0.9215275787736402
+        ```
+        
+        - 50개의 주성분들이 약 92%의 분산을 유지
+            
+            → 복원했을 때의 품질이 높았던 이유
+            
+    - 분산을 그래프로 출력
+        
+        ```python
+        plt.plot(pca.explained_variance_ratio_)
+        ```
+        
+        ![image.png](attachment:e58d8fa5-9201-4160-902e-5bfea47038d0:image.png)
+        
+        - 그래프를 확인해보면 처음 10개의 주성분이 대부분의 분산을 표현
+    
+    → 원본 데이터와의 차이를 확인해보자!
+    
+
+### 6. 다른 알고리즘과 함께 사용하기
+
+- 3개의 과일 사진을 분류 → 로지스틱 회귀 모델
+    
+    ```python
+    from sklearn.linear_model import LogisticRegression
+    lr = LogisticRegression()
+    ```
+    
+    - 지도 학습 모델을 사용 → 타깃값이 필요, 타깃값 생성
+        
+        ```python
+        target = np.array([0] * 100 + [1] * 100 + [2] * 100)
+        ```
+        
+        - 사과 : 0, 파인애플 : 1, 바나나 : 2
+- 원본 데이터를 사용
+    
+    ```python
+    from sklearn.model_selection import cross_validate
+    
+    scores = cross_validate(lr, fruits_2d, target)
+    print(np.mean(scores['test_score']))
+    print(np.mean(scores['fit_time']))
+    - 0.9966666666666667
+    	0.9981564998626709
+    ```
+    
+    - 교차 검증의 점수는 0.997정도로 매우 높음
+        - 특성이 10,000개 → 300개의 샘플에서 과대적합이 쉬움
+        - fit_time : 교차 검증 폴드의 훈련 시간이 기록
+        - 훈련에 걸린 시간은 약 1초가 걸림
+- PCA로 축소한 데이터 사용
+    
+    ```python
+    scores = cross_validate(lr, fruits_pca, target)
+    print(np.mean(scores['test_score']))
+    print(np.mean(scores['fit_time']))
+    - 0.9966666666666667
+    	0.024461746215820312
+    ```
+    
+    - 정확도는 위와 마찬가지로 모든 특성을 사용했을 때와 같음
+    - 50개의 특성만을 사용하여 훈련 시간은 0.024초로 약 40배 단축된 시간
+        
+        → PCA로 훈련 데이터의 차원을 축소 : 모델의 훈련 속도 ↑, 저장 공간 ↓
+        
+- n_components 매개변수 → 주성분의 개수 지정 or 설명된 분산의 비율
+    - 주성분의 개수 : 자연수 / 비율 : 0~1 사의의 실숫값
+    
+    ```python
+    pca = PCA(n_components=0.5)
+    pca.fit(fruits_2d)
+    
+    print(pca.n_components_)
+    - 2
+    ```
+    
+    - 위 설명된 분산의 비율을 통해 2개의 주성분 만으로도 원본 데이터의 분산의 50%를 표현할 수 있음!
+    - 위 모델로 원본 데이터를 변환
+        
+        ```python
+        fruits_pca = pca.transform(fruits_2d)
+        print(fruits_pca.shape)
+        - (300, 2)
+        ```
+        
+        - 교차 검증의 결과를 확인
+            
+            ```python
+            scores = cross_validate(lr, fruits_pca, target)
+            print(np.mean(scores['test_score']))
+            print(np.mean(scores['fit_time']))
+            - 0.9933333333333334
+            	0.02928957939147949
+            ```
+            
+            - 위 점수를 확인했을 때, 2개의 특성만으로 99%의 정확도를 달성
+    - ⇒ **왜 특성을 50개 사용했을 때의 시간이 특성을 2개 사용했을 때의 시간보다 빠를까?**
+        - LogisticRegression은 **반복적인** 최적화 과정을 통해 계수를 정함!
+            - 다중분류는 복잡해서 이진 분류로 알아보자!
+            - 시그모이드 함수의 로그우도를 최대화하거나, 음의 로그우도 (교차엔트로피 손실)을 최소화 하는 것
+                
+                ![image.png](attachment:d3dcebfd-6e87-4c1d-8909-a89e9e0e29c2:image.png)
+                
+                ![image.png](attachment:315b19cc-b6c0-4249-a471-95dad5739a8a:image.png)
+                
+            - 로그우도의 최대화 or 음의 로그우도 (교차 엔트로피, 손실 함수)의 최소화하는 beta를 찾아야함!!
+                
+                → 위에 있는 p가 beta에 대해 시그모이드 함수 (선형 방정식이 아님!!)
+                
+                → 최대화 되는 점을 찾을 때, 미분한 식이 0일 때의 후보점들을 찾고 구해야 하지만, 시그모이드 함수를 미분해도 똑같이 시그모이드가 남아서 대수적으로 해결 불가!!
+                
+                → **반복적 알고리즘 (뉴턴 방법 : IRLS)**
+                
+                - Newton-Raphson : 비선형 방정식 f(x) = 0의 해를 찾는 반복법
+            - 특성이 2개일 때, 클래스 구분이 악화되어 계수를 정할 때에 더 많은 반복 → 전체 시간이 증가
+            - PCA로 보존한 2개의 특성의 스케일/분산 분포가 나빠져 최적화가 덜 안정적, 느려질 수 있음
+- 차원 축소된 데이터를 사용해 k-평균 알고리즘으로 클러스터 찾기
+    
+    ```python
+    from sklearn.cluster import KMeans
+    km = KMeans(n_clusters=3, random_state=42)
+    km.fit(fruits_pca)
+    print(np.unique(km.labels_, return_counts=True))
+    - (array([0, 1, 2], dtype=int32), array([110,  99,  91]))
+    ```
+    
+    - fruits_pca로 찾은 클러스터는 각각 110, 99, 91개의 샘플을 포함
+        
+        : 원본 데이터를 사용했을 때와 비슷한 결과
+        
+    - 과일 이미지 출력
+        
+        ```python
+        for label in range(0, 3):
+            draw_fruits(fruits[km.labels_ == label])
+            print("\n")
+        ```
+        
+        ![image.png](attachment:7aad0323-2cb4-4a8f-8f26-5b79cd58fade:image.png)
+        
+        ![image.png](attachment:cdaf99ca-3750-4751-a6fb-4db006ee559e:image.png)
+        
+        ![image.png](attachment:5428f3c4-e50a-42b3-a378-5ecced539dbc:image.png)
+        
+        - 앞의 절과 비슷하게 파인애플과 사과와 조금 혼돈
+- 차원 축소의 또 하나의 장점 : **시각화**
+    
+    ```python
+    for label in range(0, 3):
+        data = fruits_pca[km.labels_ == label]
+        plt.scatter(data[:,0], data[:,1])
+    plt.legend(['pineapple', 'banana', 'apple'])
+    plt.show()
+    ```
+    
+    ![image.png](attachment:35bfcdf7-5482-40c9-9337-7760ea892fd3:image.png)
+    
+    - 3개 이하로 차원을 줄이면 화면에 출력하기 비교적 쉬움
+    - fruits_pca 데이터는 2개의 특성 → 2차원으로 표현
+        
+        → 잘 구분됨을 알 수 있음 + 시각화를 통하여 파인애플과 사과가 혼동이 있을 수 있음을 확인 가능
+        
+
+### 7. 주성분 분석으로 차원 축소 (문제해결 과정)
+
+- 비지도 학습 문제 중 차원 축소
+    
+    → 데이터셋의 크기를 줄이고, 시각화가 쉬움 → 성능을 높이거나 훈련 속도 ↑
+    
+- PCA 클래스를 통해 특성의 수를 줄임
+    
+    → 주성분이 원본 데이터의 분산을 얼마나 잘 나타내는가? **설명된 분산**
+    
+    - 자동으로 설명된 분산을 계산해줌 OR 주성분의 수, 원하는 비율만큼의 주성분을 찾을 수 O
+- 변환된 데이터 → 원본 데이터 (복원) : 완벽하진 않지만 상당 부분 복원 가능!
+
+## (optional) PCA는 왜 데이터의 분산을 가장 크게 만드는 방향을 찾으면, 그게 공분산 행렬의 고유벡터(eigenvector)가 되는지 증명하기
+
+- 주성분을 찾을 때, 다음 주성분은 이전 주성분에 직교
+    - 왜 직교해야할까??
+        1. 주성분은 “데이터 분산을 가장 많이 설명하는 방향”을 찾음
+            
+            → 첫 번째 성분이 이미 설명한 정보를 두 번째 성분이 다시 설명 : 비효율
+            
+        2. 서로 직교하는 축 → 좌표(투영)가 독립적으로 해석, 복원(투영 역변환)도 간단
+- 고유값, 고유벡터
+    - 행렬 A가 주어졌을 때, Av=λv를 만족
+        - 벡터 v ≠ 0 : **고유벡터 (eigenvector)**
+        - 그떄의 스칼라 λ : **고유값 (eigenvalue)**
+            
+            ⇒ 행렬 A가 고유벡터를 변환해도 방향은 바뀌지 않고 스케일만 변함
+            
+
+**왜 공분산행렬은 직교 고유벡터를 가지는가?**
+
+- 데이터 행렬 X의 공분산 행렬
+    
+    ![image.png](attachment:7908b972-b150-4214-a017-acff0158acaf:image.png)
+    
+- PCA의 첫 번째 주성분 w는 다음을 최대화하는 단위벡터임
+    
+    ![image.png](attachment:5cd4fa2a-459d-4f62-9cd1-b8d67e60c43a:image.png)
+    
+    - w의 크기가 1로 제한된 이유는, w(가중치)를 제한하지 않으면 임의로 분산을 키울 수 있음
+    - 라그랑주 승수법을 쓰면 최적 조건은 Σw=λw
+        - 즉, w는 Σ의 고유벡터 (v)
+        - 따라서, **주성분 : 공분산의 고유벡터** / **설명 분산 = 대응 고유값**

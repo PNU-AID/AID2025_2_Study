@@ -1,0 +1,346 @@
+# 4주차 ch5
+
+# 5-1 : 결정트리
+
+문제점: 로지스틱 회귀 모델로 학습 파라미터의 값을 학습시킨다. → 학습된 파라미터로 모델의 결과를 설명하긴 어려움
+
+- 로지스틱 회귀의 한계: 선형성
+    
+    **로지스틱 회귀: positive class로 분류될 확률을 계산**
+    
+    이때 확률은 linear model의 score를 변환한 것
+    
+    한계⇒ 로지스틱 회귀는 linear model을 기반으로 feature에 대한 확률(p)를 제공함
+    
+    **결정 트리: 선형가정 X,  규칙 기반 관계에 대한 분류**
+    
+
+해결: **결정 트리 모델** 할용
+
+### 결정 트리 모델
+
+데이터를 잘 나눌 수 있는 질문 활용
+
+- sklearn의 `DecisionTreeClassifier` 클래스 활용
+
+```python
+from sklearn.tree import DecisionTreeClassifier
+dt = DecisionTreeClassifier(random_state = 42)
+dt.fit(train_scaled, train_target)
+print(dt.score(train_scaled, train_target))
+print(dt.score(test_scaled, test_target))
+
+##########################################
+##########################################
+
+0.996921300750433
+0.8592307692307692
+```
+
+`plot_tree()`  활용
+
+```python
+import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
+plt.figure(figsize=(10,7))
+plot_tree(dt)
+plt.show()
+```
+
+![image.png](attachment:db3cec52-bc50-4a09-a925-7280cb0adde6:image.png)
+
+![image.png](attachment:8f99cca0-4306-4abf-9504-3d10b2f0fae9:image.png)
+
+![image.png](attachment:bca9d0cc-e5fd-4103-ba57-c02a8c9b881e:c89e991d-0d79-443a-8e3b-30fbecfdafd8.png)
+
+노드: 훈련 데이터의 특성에 대한 테스트를 표현 → 가지: 테스트의 결과(T/F)를 나타냄
+
+⇒ 리프노드에서 가장 많은 클래스가 예측 클래스면 됨. 
+
+### 불순도(gini)
+
+- 지니 불순도(DecisionTreeClassifier 기본값)
+    
+    ![image.png](attachment:30a27cdb-a521-4a71-a3cf-5f41c372da7d:ac5d79b9-9e91-4687-a6cb-8ba6927c5220.png)
+    
+    ![image.png](attachment:838f01b7-cbcd-47b9-a92c-7969e081f519:10be1fba-264c-44ad-83c5-3a99499d3f0b.png)
+    
+    - 불순도 차이 계산: 
+    자식 노드의 불순도를 샘플 개수에 비례하여 모두 더한 후 부모노드의 불순도에서 빼기
+    
+    **정보 이득**: 부모노드와 자식노드의 불순도 차이 
+    
+    정보 이득이 **최대**가 되도록 데이터를 나눔
+    
+- 엔트로피 불순도(criterion = ‘entropy’)
+    
+    ![image.png](attachment:5a9a8330-dc9b-4eeb-837d-cb9df69a60c0:6b28b92d-d145-41fa-874a-d292d58347c4.png)
+    
+
+⇒ 분류의 균일도 측정 : “노드를 순수하게 나눌수록 정보 이득이 커진다. ”
+
+정보 이득이 **최대**가 되도록 데이터를 나눔 == 부모노드(섞여있음) - 자식노드(아주 잘 분류됨) == **분류가 잘 될 수록 정보 이득이 커짐**
+
+### 가지치기: max_depth
+
+트리가 무한정 자라나는 것을 방지(훈련세트에 과대적합 방지)하기 위해 가지치기
+
+→ 최대 깊이 지정(max_depth)
+
+scaled된 데이터셋
+
+![image.png](attachment:93dfc4c0-49cb-4c56-b1ca-088bd7f4855e:image.png)
+
+기존 데이터셋
+
+![image.png](attachment:e6b4b0dd-3ee8-40d7-a972-e0411b0accb4:image.png)
+
+결정트리의 장점: 특성값의 스케일이 영향을 주지 않는다 ⇒ 표준화 된 값을 해석할 필요 없음!!
+
+### 특성 중요도: feature_importances_
+
+![image.png](attachment:0bec0b81-6031-44f5-9a77-7f1411c2e362:image.png)
+
+**특성 중요도**: 각 노드의 정보 이득과 전체 샘플에 대한 비율을 곱한 후 특성별로 더하여 계산
+
+== 불순도를 감소하는데 기여한 정도
+
+값을 모두 더하면 1이 됨
+
+# 5-2: 교차 검증과 그리드 서치
+
+문제: test set을 사용하여 성능을 확인하다 보면 점점 테스트 세트에 맞춰 훈련됨. 
+
+해결: 검증 세트를 만들자. 
+
+### 검증 세트: validation set
+
+![image.png](attachment:7f4d56f8-b0bf-4c3f-97f9-12191cf30525:image.png)
+
+(훈련 데이터가 아주 많다면 test, validation set에 몇%만 넣어도 됨)
+
+```python
+from sklearn.model_selection import train_test_split
+train_input, test_input, train_target, test_target = train_test_split(data, target, test_size=0.2, random_state= 42)
+# train -> train, validation
+sub_input, val_input, sub_target, val_target = train_test_split(train_input, train_target, test_size = 0.2, random_state = 42)
+```
+
+훈련세트로 학습 ⇒ 검증세트로 모델을 평가 ⇒ 전체 훈련 데이터에서 다시 훈련⇒ 마지막 테스트 세트로 최종 평가
+
+### 교차검증
+
+훈련데이터가 많을수록 좋은 모델, 검증세트가 적으면 검증 점수가 불안정
+
+⇒ 안정적인 검증점수를 얻고 훈련에 많은 데이터를 사용하기 위한 교차 검증 
+
+![image.png](attachment:8fc424bb-99c6-4bbc-991b-909e7c973037:ad6f7df0-708b-48c7-a292-930c3bee8093.png)
+
+k-겹 교차 검증: 훈련 세트를 k부분으로 나눠서 교차 검증을 수행
+
+검증 세트의 비율이 줄어들어도, 각 폴드에서 계산한 검증 점수를 평균 ⇒ 안정된 점수
+
+`cross_validate` (기본적으로 5-폴드: cv = 5)
+
+![image.png](attachment:90b7ffb5-3170-4a8a-872f-67d6004ed40c:image.png)
+
+- 교차 검증의 최종 점수는 test_score(검증 폴드의 점수)키에 담긴 점수를 평균하여 얻을 수 있다.
+- 훈련 세트를 섞어 폴드를 나누지 않는다
+    - 기본적으로 KFold(회귀) / StratifiedKFold(분류) 사용
+    
+    ```python
+    from sklearn.model_selection import StratifiedKFold
+    scores = cross_validate(dt, train_input, train_target, cv = StratifiedKFold())
+    print(np.mean(scores['test_score']))
+    ```
+    
+    - 만약 훈련 세트를 섞은 후 수행하고 싶다면 분할기 지정
+    
+    ```python
+    splitter = StratifiedKFold(n_splits=10, shuffle = True, random_state=42)
+    scores = cross_validate(dt, train_input, train_target, cv = splitter)
+    print(np.mean(scores['test_score']))
+    ```
+    
+
+### 하이퍼파라미터 튜닝
+
+하이퍼파라미터: 사용자 지정 파라미터로, 학습할 수 없는 파라미터. 
+
+⇒ 튜닝: 기본값으로 → 조금씩 바꿔가면서 모델 훈련
+
+매개변수를 동시에 바꿔가며 최적의 값을 찾아야함 
+
+- **그리드 서치 이용**
+
+`GridSearchCV`
+
+```python
+from sklearn.model_selection import GridSearchCV
+params = {'min_impurity_decrease': [0.0001, 0.0002, 0.0003, 0.0004, 0.0005]}
+gs = GridSearchCV(DecisionTreeClassifier(random_state=42), params, n_jobs = 1)
+```
+
+params의 parameter로 바꿔가며 훈련
+: 기본 cv = 5, 각 min_impurity_decrease값을 바꿔가며 5번씩 실행 ⇒ 25개의 모델 훈련
+
+```python
+dt = gs.best_estimator_ # 검증 점수가 높은 모델을 자동으로 저장
+gs.best_params_ # 그리드 서치로 찾은 최적의 매개변수
+gs.cv_results_['mean_test_score'] # 교차 검증의 평균 점수
+```
+
+- **랜덤 서치 이용**
+
+매개변수 값의 목록을 전달하지 않고 샘플링할 수 있는 확률 분포 객체를 전달 
+
+```python
+from scipy.stats import uniform, randint # uniform: 실숫값, randint: 정숫값
+rgen = randint(0, 10)
+rgen.rvs(10)
+np.unique(rgen.rvs(1000), return_counts=True)
+ugen = uniform(0, 1)
+ugen.rvs(10)
+```
+
+```
+params = {
+    'min_impurity_decrease': uniform(0.0001, 0.001),
+    'max_depth': randint(20,50),
+    'min_samples_split': randint(2,25),
+    'min_samples_leaf': randint(1, 25)
+}
+```
+
+지정된 횟수만큼 샘플링하여 교차 검증을 수행 ⇒ 탐색량 조절 가능
+
+# 5-3 : 트리의 앙상블
+
+### 정형 데이터와 비정형 데이터
+
+- 정형 데이터
+    - csv, database, excel에 저장하기 쉽게 어떤 구조로 되어 있는 데이터
+    - 결정 트리 기반의 **앙상블 학습 알고리즘** 사용
+- 비정형 데이터
+    - 구조화 X, 사진, 음악 등
+    - 신경망 모델 사용
+
+### 랜덤 포레스트
+
+결정 트리를 랜덤하게 만들어 숲을 만듬 
+
+![image.png](attachment:7b80292a-52d6-4e3d-98c8-099023c35139:30e80730-c66c-4e64-91b5-5574e1fced32.png)
+
+- 각 트리를 훈련하기 위한 데이터 만들기
+    1. 랜덤하게 샘플을 추출하여 만들기
+    2. **부트스트랩 샘플**(중복된 샘플을 뽑을 수 있도록), 훈련 세트의 크기와 동일한 크기
+    3. 전체 특성 중에서 일부 특성을 무작위로 고른 다음 이 중에서 **최선의 분할**을 찾기
+- 자체적으로 모델을 평가하는 점수 얻기
+    1. 부트스트랩 샘플에 포함되지 않고 남는 샘플: OOB 샘플
+    2. 검증 세트의 역할
+    3. `oob_score = True` 
+
+**장점**: 
+
+특성의 일부를 랜덤하게 선택하여 결정 트리를 훈련, 즉, 하나의 특성에 과도하게 집중하지 않음
+과대적합을 줄이고 일반화 성능 향상
+
+### 엑스트라 트리
+
+- 각 트리를 훈련하기 위한 데이터 만들기
+    1. 랜덤하게 샘플을 추출하여 만들기
+    2. ~~부트스트랩 샘플 X~~ **전체 훈련 세트 사용**
+    3. 무작위로 분할 (splitter = ‘random’)
+
+**장점:**
+
+엑스트라 트리가 무작위성이 좀 더 크기 때문에 더 많은 훈련이 필요하지만
+특성 고려 없이 랜덤하게 노드를 분할함 → 더 빠른 속도로 계산할 수 있다. 
+
+### Gradient Boosting
+
+깊이가 얕은 결정 트리를 사용하여 이전 트리의 오차를 보완
+
+- Gradient descent & Gradient Boosting
+    - Gradient descent
+        - loss를 최소화하기 위해 파라미터를 gradient의 반대 방향으로 update시킴
+    - Gradient Boosting
+        - loss를 최소화하기 위해 얕은 트리를 추가하며 규칙(loss에 대한)을 예측하도록 학습
+
+```python
+gb = GradientBoostingClassifier(n_estimators=500, learning_rate=0.2, random_state = 42)
+scores = cross_validate(gb, train_input, train_target, return_train_score=True, n_jobs = -1)
+print(np.mean(scores['train_score']), np.mean(scores['test_score']))
+```
+
+`n_estimators` : 얕은 학습기(결정트리)의 개수
+
+`learning_rate` : 학습률
+
+**장점:**
+
+1. 얕은 학습기들로 이루어진 모델이라 과대적합에 강하다. 개별 트리의 과대적합 방지
+2. 학습률(ex: 0.2)로 결과 반영의 정도를 설정 → 주 패턴을 우선 학습, noise는 무시 ⇒ 전체 트리의 과대적합 방지
+
+**단점:**
+
+순서대로 트리를 추가하기 때문에 훈련 속도가 느리다. (O(n))
+
+### 히스토그램 기반 G.B
+
+**과정:**
+
+1. 특성을 256개의 구간으로 나눔
+2. 구간을 기반으로 히스토그램 만들기
+
+**장점**
+
+- 최적의 분할을 매우 **빠르게** 찾을 수 있다.
+    - 테스트해야 할 최적의 분할 지점 후보의 개수가 줄어듬(연속된 실수 값 → 이산적인 구간, 256개만 테스트하면 됨)
+- 입력에 누락된 특성이 있어도 따로 전처리할 필요가 없다.
+    - if 데이터에 NaN이 있다
+        - 기존 방식: 사용자가 직접 데이터 정제 작업을 거쳐야했음
+        - 이번 방식: NaN 전용 구간 생성 → 이 구간을 하나의 데이터로 취급
+            - 불순도를 낮춰주는 방향으로 자동 분류
+            - NaN 자체를 하나의 유의미한 정보로 보고 누락된 패턴을 스스로 학습하도록 함
+
+```python
+from sklearn.inspection import permutation_importance
+hgb.fit(train_input, train_target)
+result = permutation_importance(hgb, train_input, train_target, n_repeats = 10, random_state = 42, n_jobs=-1)
+print(result.importances_mean)
+```
+
+**대표적인 히스토그램 기반 그레디언트 부스팅 라이브러리:**
+
+- XGBoost
+    
+    ```python
+    from xgboost import XGBClassifier
+    xgb = XGBClassifier(tree_method='hist', random_state = 42)
+    scores=cross_validate(xgb, train_input, train_target, return_train_score=True)
+    print(np.mean(scores['train_score']), np.mean(scores['test_score']))
+    ```
+    
+- LightGBM
+    
+    ```python
+    from lightgbm import LGBMClassifier
+    lgb = LGBMClassifier(random_state = 42)
+    scores = cross_validate(lgb, train_input, train_target, return_train_score=True, n_jobs=-1)
+    print(np.mean(scores['train_score']), np.mean(scores['test_score']))
+    ```
+    
+
+<aside>
+<img src="/icons/book_gray.svg" alt="/icons/book_gray.svg" width="40px" /> 교재 코드의 하이퍼파라미터 수정하면서 파인튜닝 진행, 성능 확인
+
+</aside>
+
+ **그래디언트 부스팅**
+
+![image.png](attachment:fa95228c-93c3-4ddd-b04d-bb67a9a79bb0:스크린샷_2025-11-07_145906.png)
+
+![image.png](attachment:02a34868-25d7-41c8-a6cb-2df92362b533:스크린샷_2025-11-07_145836.png)
+
+**히스토그램 기반 그레디언트 부스팅**

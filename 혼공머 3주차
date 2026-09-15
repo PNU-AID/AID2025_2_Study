@@ -1,0 +1,263 @@
+## Ch4-1 로지스틱  회귀
+
+### —>GOAL : 럭키백에 포함된 생선의 확률구하기
+
+SOL : k-최근접 이웃을 이용해서 이웃의 클래스 비율을 확률이라고 출력하면???
+
+- 데이터 준비하기
+
+```python
+import pandas as pd
+
+fish = pd.read_csv('https://bit.ly/fish_csv_data')
+fish.head() #처음 다섯 개의 열을 출력시키는 함수
+
+print(pd.unique(fish['Species'])) 
+ 
+['Bream' 'Roach' 'Whitefish' 'Parkki' 'Perch' 'Pike' 'Smelt']
+
+fish_input = fish[['Weight','Length','Diagonal','Height','Width']].to_numpy()
+print(fish_input[:5]) # 처음 5개 열을 출력
+[[242.      25.4     30.      11.52     4.02  ]
+ [290.      26.3     31.2     12.48     4.3056]
+ [340.      26.5     31.1     12.3778   4.6961]
+ [363.      29.      33.5     12.73     4.4555]
+ [430.      29.      34.      12.444    5.134 ]]
+fish_target = fish['Species'].to_numpy() #Species 가 타깃이됨 
+from sklearn.model_selection import train_test_split
+
+train_input, test_input, train_target, test_target = train_test_split(
+    fish_input, fish_target, random_state=42)
+# StandardScaler를 통해 훈련세트와 테스트 세트를 표준화 전처리함    
+from sklearn.preprocessing import StandardScaler
+ss = StandardScaler()
+ss.fit(train_input)
+train_scaled = ss.transform(train_input)
+test_scaled = ss.transform(test_input)
+
+```
+
+- K최근접 이웃 분류기의 확률 예측
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+
+kn = KNeighborsClassifier(n_neighbors=3)
+kn.fit(train_scaled, train_target)
+
+print(kn.score(train_scaled, train_target))
+print(kn.score(test_scaled, test_target))
+0.8907563025210085
+0.85
+print(kn.classes_) # classes_를 쓰면알파벳 순으로 나열이 됨 
+['Bream' 'Parkki' 'Perch' 'Pike' 'Roach' 'Smelt' 'Whitefish']
+print(kn.predict(test_scaled[:5])) # 처음 5개의 샘플들은 어떤 class가 나올 지 예측한 것 
+['Perch' 'Smelt' 'Pike' 'Perch' 'Perch']
+
+import numpy as np
+proba = kn.predict_proba(test_scaled[:5]) #5개 샘플에 대한 예측값을 만드는 predict_proba
+print(np.round(proba, decimals=4))# 소수점 넷째 자리까지 표기한다는 의미이므로 , 5번째 자리에서 반올림함
+[[0.     0.     1.     0.     0.     0.     0.    ]
+ [0.     0.     0.     0.     0.     1.     0.    ]
+ [0.     0.     0.     1.     0.     0.     0.    ]
+ [0.     0.     0.6667 0.     0.3333 0.     0.    ]
+ [0.     0.     0.6667 0.     0.3333 0.     0.    ]]
+distances, indexes = kn.kneighbors(test_scaled[3:4])
+print(train_target[indexes]) # roach가 1/3 그리고 perch가 2/3임.
+[['Roach' 'Perch' 'Perch']
+```
+
+### 🥴문제 발생 : 최근접이웃 알고리즘을 사용하면 제일 근접한 이웃 3개만 참고함. 그럼 럭키백 물고기 예측 확률 자체가 0, 1/3, 2/3, 1 밖에 경우의 수가 없음.  —> 그럼 럭키백 확률이 CONCISE 하지 않음 !!!
+
+### sol :  로지스틱 회귀를 쓰자→ 시그모이드 함수를 사용해서
+
+![스크린샷 2025-10-29 181234.png](attachment:c625f886-883a-40b3-a66e-e70b36b3adb2:스크린샷_2025-10-29_181234.png)
+
+![스크린샷 2025-10-29 190855.png](attachment:d74f8968-3fb3-4652-97fc-e5e817627166:스크린샷_2025-10-29_190855.png)
+
+z가 아주 큰 음수일 때 이 함수는 0이되고 아주 큰 양수일 때 1이 되도록 시그모이드 함수를 이용해서 바꿀 수 있다. 그럼0~1사이의 값을 0~100%까지 확률로 해석할 수 있다 . 
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+z = np.arange(-5, 5, 0.1)
+phi = 1 / (1 + np.exp(-z))
+
+plt.plot(z, phi)
+plt.xlabel('z')
+plt.ylabel('phi')
+plt.show()
+```
+
+![스크린샷 2025-10-29 192040.png](attachment:946f8b50-a378-493c-84f3-ef6dc355574c:스크린샷_2025-10-29_192040.png)
+
+### 로지스틱 회귀로 이진 분류 수행하기
+
+```python
+char_arr = np.array(['A', 'B', 'C', 'D', 'E'])
+print(char_arr[[True, False, True, False, False]])
+['A' 'C']
+bream_smelt_indexes = (train_target == 'Bream') | (train_target == 'Smelt')
+# bream이거나 smelt이거나로 나누고 
+train_bream_smelt = train_scaled[bream_smelt_indexes]
+target_bream_smelt = train_target[bream_smelt_indexes]
+from sklearn.linear_model import LogisticRegression
+
+lr = LogisticRegression()
+lr.fit(train_bream_smelt, target_bream_smelt)
+#로지스틱 회귀를 이용해 훈련하기 
+print(lr.predict(train_bream_smelt[:5]))
+['Bream' 'Smelt' 'Bream' 'Bream' 'Bream']
+#에측해보니 하나 빼고는 다 도미로 예측함.
+print(lr.predict_proba(train_bream_smelt[:5]))
+[[0.99760007 0.00239993]
+ [0.02737325 0.97262675]
+ [0.99486386 0.00513614]
+ [0.98585047 0.01414953]
+ [0.99767419 0.00232581]]
+ 
+print(lr.classes_)
+['Bream' 'Smelt']
+print(lr.coef_, lr.intercept_)
+[[-0.40451732 -0.57582787 -0.66248158 -1.01329614 -0.73123131]] [-2.16172774]
+#로지스틱 회귀가 학습한 계수임.
+decisions = lr.decision_function(train_bream_smelt[:5])
+print(decisions)
+[-6.02991358  3.57043428 -5.26630496 -4.24382314 -6.06135688]
+from scipy.special import expit
+
+print(expit(decisions))
+[0.00239993 0.97262675 0.00513614 0.01414953 0.00232581]
+```
+
+### 로지스틱 회귀로 다중 분류 수행하기
+
+```python
+lr = LogisticRegression(C=20, max_iter=1000)
+lr.fit(train_scaled, train_target)
+
+print(lr.score(train_scaled, train_target))
+print(lr.score(test_scaled, test_target))
+0.9327731092436975
+0.925
+print(lr.predict(test_scaled[:5]))
+['Perch' 'Smelt' 'Pike' 'Roach' 'Perch']
+proba = lr.predict_proba(test_scaled[:5])
+print(np.round(proba, decimals=3))
+[[0.    0.014 0.842 0.    0.135 0.007 0.003]
+ [0.    0.003 0.044 0.    0.007 0.946 0.   ]
+ [0.    0.    0.034 0.934 0.015 0.016 0.   ]
+ [0.011 0.034 0.305 0.006 0.567 0.    0.076]
+ [0.    0.    0.904 0.002 0.089 0.002 0.001]]
+```
+
+<인지> : LogisticRegression은 기본적으로 릿지 회귀와 같이 계수의 제곱을 규제한다. 릿지 회귀에서는 alpha매개변수로 규제의 양을 조절했다면 LogisticRegression에서는 C의 값을 통해 규제의 양을 조절한다. C는 alpha와 다르게 C의 값의 크기가 규제의 값과 반비례한다.(기본값:1)
+
+또한 max_iter는 반복횟수를 통칭
+
+```python
+print(lr.classes_)
+['Bream' 'Parkki' 'Perch' 'Pike' 'Roach' 'Smelt' 'Whitefish']
+print(lr.coef_.shape, lr.intercept_.shape)
+(7, 5) (7,)
+decision = lr.decision_function(test_scaled[:5])
+print(np.round(decision, decimals=2))
+[[ -6.51   1.04   5.17  -2.76   3.34   0.35  -0.63]
+ [-10.88   1.94   4.78  -2.42   2.99   7.84  -4.25]
+ [ -4.34  -6.24   3.17   6.48   2.36   2.43  -3.87]
+ [ -0.69   0.45   2.64  -1.21   3.26  -5.7    1.26]
+ [ -6.4   -1.99   5.82  -0.13   3.5   -0.09  -0.7 ]]
+ from scipy.special import softmax
+
+proba = softmax(decision, axis=1)
+print(np.round(proba, decimals=3))
+[[0.    0.014 0.842 0.    0.135 0.007 0.003]
+ [0.    0.003 0.044 0.    0.007 0.946 0.   ]
+ [0.    0.    0.034 0.934 0.015 0.016 0.   ]
+ [0.011 0.034 0.305 0.006 0.567 0.    0.076]
+ [0.    0.    0.904 0.002 0.089 0.002 0.001]]
+```
+
+<인지> : 다중분류에서는 이진분류와 다르게 소프트맥스 함수를 사용함
+
+![스크린샷 2025-10-29 193807.png](attachment:bdae2c1e-b9be-48f2-846b-5214509132a5:스크린샷_2025-10-29_193807.png)
+
+## 4-2 확률적 경사 하강법
+
+→ 점진적 학습을 위한 확률적 경사 하강법
+
+![스크린샷 2025-10-29 202257.png](attachment:3e3fb07b-a8cf-498a-ab46-d8ddf56fddd6:스크린샷_2025-10-29_202257.png)
+
+  1. 확률적 경사 하강법 :전체 샘플을 사용하지 않고 딱 하나의 샘플을 훈련 세트에서 랜덤하게 고르는 것 
+
+1. 미니배치 경사 하강법: 1개씩이 아니고 무작위로 몇 개의 샘플을 선택해서 경사를 따라 내려가는 방법임(여러개의 샘플 사용)
+2. 배치 경사 하강법 : 극단적으로 한 번 , 전체 데이터를 사용하는 것 
+3. 손실함수 : 어떤 문제에서 머신러닝 알고리즘이 얼마나 엉터리인지를 측정하는 기준→ 당연히 값이 작을 수록 좋음. 
+
+![스크린샷 2025-10-29 202856.png](attachment:f6a5990b-1b0c-4a35-af51-6fb763b816bb:스크린샷_2025-10-29_202856.png)
+
+—> 다중분류에서는 크로스엔트로피 손실 함수라고 부른다. 
+
+### Code로 알아보기
+
+```python
+import pandas as pd
+
+fish = pd.read_csv('https://bit.ly/fish_csv_data')
+fish_input = fish[['Weight','Length','Diagonal','Height','Width']].to_numpy()
+fish_target = fish['Species'].to_numpy()
+from sklearn.model_selection import train_test_split
+
+train_input, test_input, train_target, test_target = train_test_split(
+    fish_input, fish_target, random_state=42)
+from sklearn.preprocessing import StandardScaler
+
+ss = StandardScaler()
+ss.fit(train_input)
+train_scaled = ss.transform(train_input)
+test_scaled = ss.transform(test_input)
+from sklearn.linear_model import SGDClassifier
+sc = SGDClassifier(loss='log_loss', max_iter=10, random_state=42)
+sc.fit(train_scaled, train_target)
+
+print(sc.score(train_scaled, train_target))
+print(sc.score(test_scaled, test_target))
+0.773109243697479
+0.775
+
+sc.partial_fit(train_scaled, train_target) #모델을 이어서 훈련 할 떄 사용
+
+print(sc.score(train_scaled, train_target))
+print(sc.score(test_scaled, test_target))
+0.8151260504201681
+0.85
+```
+
+![스크린샷 2025-10-29 203319.png](attachment:7ddd001b-d7f4-4a16-a62a-64c7b353faf1:스크린샷_2025-10-29_203319.png)
+
+```python
+import numpy as np
+
+sc = SGDClassifier(loss='log_loss', random_state=42)
+
+train_score = []
+test_score = []
+
+classes = np.unique(train_target)
+#300번 동안 반복함
+for _ in range(0, 300): # 나중에 사용하지 않고 그냥 버리는 값을 넣어두는 용도로 사용 _
+    sc.partial_fit(train_scaled, train_target, classes=classes)
+
+    train_score.append(sc.score(train_scaled, train_target))
+    test_score.append(sc.score(test_scaled, test_target))
+import matplotlib.pyplot as plt
+
+plt.plot(train_score)
+plt.plot(test_score)
+plt.xlabel('epoch')
+plt.ylabel('accuracy')
+plt.show()
+```
+
+![스크린샷 2025-10-29 203509.png](attachment:2cbff1da-62e0-405d-aaa1-5fd5f49d6b0f:스크린샷_2025-10-29_203509.png)
